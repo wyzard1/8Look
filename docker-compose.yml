@@ -1,0 +1,31 @@
+services:
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  nextjs-app:
+    image: nextjs-app:latest
+    container_name: frontend
+    build: 
+      context: ./8look
+      dockerfile: ../Dockerfile
+    ports:
+      - '${APP_PORT}:${APP_PORT}'
+    volumes:
+      - ./8look:/app
+      - node_modules:/app/node_modules
+      - build:/app/.next
+    env_file:
+      - .env
+
+volumes:
+  node_modules:
+  build:
+  db_data:
