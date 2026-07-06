@@ -1,0 +1,51 @@
+# Dependencies
+node_modules
+/package-lock.json
+/yarn.lock
+/pnpm-lock.yaml
+/bun.lockb
+
+# Next.js Build Outputs
+.next
+out
+dist
+build
+
+# Environment Variables & Secrets
+.env
+.env*.local
+.env.development
+.env.production
+.env.test
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Version Control
+.git
+.gitignore
+.gitattributes
+.github
+.gitlab
+
+# IDEs and Editors
+.vscode
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Docker configuration (Optional)
+Dockerfile
+docker-compose.yml
+.dockerignore
