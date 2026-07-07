@@ -1,100 +1,245 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import {
+  BriefcaseBusiness,
+  CarFront,
+  Dumbbell,
+  House,
+  Laptop,
+  MapPin,
+  Moon,
+  Search,
+  Shirt,
+  Sun,
+  Warehouse,
+} from 'lucide-react';
+import Link from 'next/link';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 
 type Listing = {
   id: number;
+  categoryId?: number | null;
   title: string;
-  description?: string;
-  price?: number;
-  place?: string;
+  price?: number | null;
+  place?: string | null;
+  images?: string[] | null;
 };
+
+const categories = [
+  { id: 1, label: 'Immovables', icon: Warehouse },
+  { id: 2, label: 'Cars', icon: CarFront },
+  { id: 3, label: 'Jobs', icon: BriefcaseBusiness },
+  { id: 4, label: 'Tech', icon: Laptop },
+  { id: 5, label: 'Home', icon: House },
+  { id: 6, label: 'Sports', icon: Dumbbell },
+  { id: 7, label: 'Clothing', icon: Shirt },
+] as const;
+
+const fallbackImage = '/listing-placeholder.png';
+
+function safeImageUrl(images?: string[] | null) {
+  const candidate = images?.[0];
+  if (!candidate) return fallbackImage;
+
+  try {
+    const url = new URL(candidate);
+    return url.protocol === 'http:' || url.protocol === 'https:'
+      ? url.toString()
+      : fallbackImage;
+  } catch {
+    return fallbackImage;
+  }
+}
+
+function formatPrice(price?: number | null) {
+  if (typeof price !== 'number' || !Number.isFinite(price)) return 'Price on request';
+  return new Intl.NumberFormat('en-GB', {
+    style: 'currency',
+    currency: 'EUR',
+    maximumFractionDigits: 0,
+  }).format(price);
+}
 
 export default function Home() {
   const [query, setQuery] = useState('');
-  const [listing, setListing] = useState<Listing | null>(null);
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  useEffect(() => {
+    const storedTheme = localStorage.getItem('8look-theme');
+    const useDark = storedTheme
+      ? storedTheme === 'dark'
+      : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.dataset.theme = useDark ? 'dark' : 'light';
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void loadListings('', controller.signal);
+    return () => controller.abort();
+  }, []);
+
+  async function loadListings(searchQuery: string, signal?: AbortSignal) {
     setLoading(true);
     setError('');
-    setListing(null);
-
-    const trimmedQuery = query.trim();
-    if (!trimmedQuery) {
-      setError('Please enter a search query');
-      setLoading(false);
-      return;
-    }
-    if (trimmedQuery.length > 100) {
-      setError('Search query must be 100 characters or less');
-      setLoading(false);
-      return;
-    }
 
     try {
-      const response = await fetch(`/api/listings/search?query=${encodeURIComponent(trimmedQuery)}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
+      const params = searchQuery ? `?query=${encodeURIComponent(searchQuery)}` : '';
+      const response = await fetch(`/api/listings${params}`, { signal });
       if (!response.ok) {
-        throw new Error(`API request failed with status ${response.status}`);
+        const message = response.status === 400
+          ? 'Use 3 to 20 letters, numbers, spaces, or hyphens.'
+          : 'Listings could not be loaded. Please try again.';
+        throw new Error(message);
       }
 
-      const data = await response.json();
-      if (Array.isArray(data) && data.length > 0) {
-        setListing(data[0]);
-      } else {
-        setError('No listing found for that query.');
-      }
-    } catch (err) {
-      let sanitizedError = 'Something went wrong. Please try again.';
-      if (err instanceof Error) {
-        const message = err.message;
-        if (message.includes('Failed to fetch') || message.includes('CORS')) {
-          sanitizedError = 'Unable to connect to the API. Please try again later.';
-        } else if (message.includes('API request failed')) {
-          sanitizedError = 'API request failed. Please try again.';
-        } else {
-          sanitizedError = message.substring(0, 100);
-        }
-      }
-      setError(sanitizedError);
+      const data: unknown = await response.json();
+      setListings(Array.isArray(data) ? data : []);
+    } catch (requestError) {
+      if (requestError instanceof DOMException && requestError.name === 'AbortError') return;
+      setListings([]);
+      setError(requestError instanceof Error ? requestError.message : 'Something went wrong.');
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
   }
 
+  function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const cleanQuery = query.trim();
+    if (cleanQuery && (cleanQuery.length < 3 || cleanQuery.length > 20)) {
+      setError('Use 3 to 20 characters for search.');
+      return;
+    }
+    void loadListings(cleanQuery);
+  }
+
+  function toggleTheme() {
+    const nextDarkMode = document.documentElement.dataset.theme !== 'dark';
+    document.documentElement.dataset.theme = nextDarkMode ? 'dark' : 'light';
+    localStorage.setItem('8look-theme', nextDarkMode ? 'dark' : 'light');
+  }
+
+  const visibleListings = useMemo(
+    () => selectedCategory === null
+      ? listings
+      : listings.filter((listing) => listing.categoryId === selectedCategory),
+    [listings, selectedCategory],
+  );
+
   return (
-    <main style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
-      <h1>Search listings by ID</h1>
-      <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
-        <input
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Enter listing ID"
-          style={{ padding: '0.5rem', minWidth: '220px' }}
-        />
-        <button type="submit" disabled={loading} style={{ padding: '0.5rem 1rem' }}>
-          {loading ? 'Searching...' : 'Search'}
-        </button>
-      </form>
+    <main>
+      <header className="site-header">
+        <div className="header-top">
+          <Link className="brand" href="/" aria-label="8look home">
+            <span>8</span>look
+          </Link>
 
-      {error ? <p style={{ color: 'crimson', marginTop: '1rem' }}>{error}</p> : null}
+          <form className="search-form" onSubmit={handleSearch} role="search">
+            <Search aria-hidden="true" size={20} />
+            <input
+              aria-label="Search listings"
+              autoComplete="off"
+              maxLength={20}
+              placeholder="What are you looking for?"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+            />
+            <button type="submit" disabled={loading} aria-label="Search">
+              <Search aria-hidden="true" size={19} />
+              <span>Search</span>
+            </button>
+          </form>
 
-      {listing ? (
-        <section style={{ marginTop: '1.5rem', border: '1px solid #ddd', padding: '1rem', maxWidth: '420px' }}>
-          <h2>{listing.title}</h2>
-          <p>{listing.description ?? 'No description provided.'}</p>
-          <p>Price: {listing.price ?? 'N/A'}</p>
-          <p>Place: {listing.place ?? 'N/A'}</p>
-        </section>
-      ) : null}
+          <div className="account-actions">
+            <button className="theme-button" type="button" onClick={toggleTheme} aria-label="Toggle color theme" title="Toggle color theme">
+              <Sun className="sun-icon" size={20} />
+              <Moon className="moon-icon" size={20} />
+            </button>
+            <Link className="login-link" href="/login">Log in</Link>
+            <Link className="register-link" href="/register">Register</Link>
+          </div>
+        </div>
+
+        <nav className="category-nav" aria-label="Listing categories">
+          <button
+            className={selectedCategory === null ? 'active' : ''}
+            type="button"
+            onClick={() => setSelectedCategory(null)}
+          >
+            All
+          </button>
+          {categories.map(({ id, label, icon: Icon }) => (
+            <button
+              className={selectedCategory === id ? 'active' : ''}
+              type="button"
+              key={id}
+              onClick={() => setSelectedCategory(id)}
+            >
+              <Icon size={18} aria-hidden="true" />
+              {label}
+            </button>
+          ))}
+        </nav>
+      </header>
+
+      <section className="listing-section" aria-live="polite" aria-busy={loading}>
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">Marketplace</p>
+            <h1>{query.trim() ? 'Search results' : 'Fresh listings'}</h1>
+          </div>
+          {!loading && !error && <span>{visibleListings.length} listings</span>}
+        </div>
+
+        {error && (
+          <div className="status-message error" role="alert">
+            <strong>We hit a snag.</strong>
+            <span>{error}</span>
+          </div>
+        )}
+
+        {loading ? (
+          <div className="listing-grid" aria-label="Loading listings">
+            {Array.from({ length: 8 }, (_, index) => (
+              <div className="listing-card skeleton" key={index} />
+            ))}
+          </div>
+        ) : visibleListings.length > 0 ? (
+          <div className="listing-grid">
+            {visibleListings.map((listing) => (
+              <article className="listing-card" key={listing.id}>
+                <div className="listing-image-wrap">
+                  {/* Database hosts are dynamic, so a fixed Next Image allowlist is not viable here. */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={safeImageUrl(listing.images)}
+                    alt=""
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                    onError={(event) => {
+                      event.currentTarget.onerror = null;
+                      event.currentTarget.src = fallbackImage;
+                    }}
+                  />
+                </div>
+                <div className="listing-content">
+                  <h2>{listing.title || 'Untitled listing'}</h2>
+                  <p className="place"><MapPin size={16} aria-hidden="true" />{listing.place || 'Location not provided'}</p>
+                  <p className="price">{formatPrice(listing.price)}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : !error ? (
+          <div className="status-message">
+            <strong>No listings found.</strong>
+            <span>Try a broader search or choose another category.</span>
+          </div>
+        ) : null}
+      </section>
     </main>
   );
 }
