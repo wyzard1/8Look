@@ -6,7 +6,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB}
     ports:
-      - "5432:5432"
+      - "${DB_PORT}:${DB_PORT}"
     volumes:
       - db_data:/var/lib/postgresql/data
     healthcheck:
@@ -40,6 +40,7 @@ services:
       - .env
     environment:
       - SPRING_PROFILES_ACTIVE=dev
+      - API_URL=http://spring-app:8080
       - DB_HOST=db
       - DB_PORT=5432
     depends_on:
