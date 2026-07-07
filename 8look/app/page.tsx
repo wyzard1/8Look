@@ -14,7 +14,7 @@ import {
   Warehouse,
 } from 'lucide-react';
 import Link from 'next/link';
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 type Listing = {
   id: number;
@@ -66,7 +66,20 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const categoryNavRef = useRef<HTMLElement>(null);
+  const categoryIndicatorRef = useRef<HTMLSpanElement>(null);
 
+  useLayoutEffect(() => {
+    const nav = categoryNavRef.current;
+    const indicator = categoryIndicatorRef.current;
+    const activeButton = nav?.querySelector<HTMLButtonElement>('button.active');
+
+    if(!indicator || !activeButton || !nav) return;
+
+    indicator.style.width = `${activeButton.offsetWidth}px`;
+    indicator.style.transform = `translateX(${activeButton.offsetLeft}px)`;
+
+  }, [selectedCategory]);
   useEffect(() => {
     const storedTheme = localStorage.getItem('8look-theme');
     const useDark = storedTheme
@@ -147,10 +160,16 @@ export default function Home() {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
-            <button type="submit" disabled={loading} aria-label="Search">
-              <Search aria-hidden="true" size={19} />
-              <span>Search</span>
-            </button>
+            <nav
+              ref={categoryNavRef}
+              aria-label="Listing categories"
+            >
+              <span
+                ref={categoryIndicatorRef}
+                className="category-indicator"
+                aria-hidden="true"
+              />
+            </nav>
           </form>
 
           <div className="account-actions">
@@ -201,44 +220,46 @@ export default function Home() {
           </div>
         )}
 
-        {loading ? (
-          <div className="listing-grid" aria-label="Loading listings">
-            {Array.from({ length: 8 }, (_, index) => (
-              <div className="listing-card skeleton" key={index} />
-            ))}
-          </div>
-        ) : visibleListings.length > 0 ? (
-          <div className="listing-grid">
-            {visibleListings.map((listing) => (
-              <article className="listing-card" key={listing.id}>
-                <div className="listing-image-wrap">
-                  {/* Database hosts are dynamic, so a fixed Next Image allowlist is not viable here. */}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={safeImageUrl(listing.images)}
-                    alt=""
-                    loading="lazy"
-                    referrerPolicy="no-referrer"
-                    onError={(event) => {
-                      event.currentTarget.onerror = null;
-                      event.currentTarget.src = fallbackImage;
-                    }}
-                  />
-                </div>
-                <div className="listing-content">
-                  <h2>{listing.title || 'Untitled listing'}</h2>
-                  <p className="place"><MapPin size={16} aria-hidden="true" />{listing.place || 'Location not provided'}</p>
-                  <p className="price">{formatPrice(listing.price)}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-        ) : !error ? (
-          <div className="status-message">
-            <strong>No listings found.</strong>
-            <span>Try a broader search or choose another category.</span>
-          </div>
-        ) : null}
+        <div className="category-results" key={selectedCategory ?? 'all'}>
+          {loading ? (
+            <div className="listing-grid" aria-label="Loading listings">
+              {Array.from({ length: 8 }, (_, index) => (
+                <div className="listing-card skeleton" key={index} />
+              ))}
+            </div>
+          ) : visibleListings.length > 0 ? (
+            <div className="listing-grid category-transition">
+              {visibleListings.map((listing) => (
+                <article className="listing-card" key={listing.id}>
+                  <div className="listing-image-wrap">
+                    {/* Database hosts are dynamic, so a fixed Next Image allowlist is not viable here. */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={safeImageUrl(listing.images)}
+                      alt=""
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                      onError={(event) => {
+                        event.currentTarget.onerror = null;
+                        event.currentTarget.src = fallbackImage;
+                      }}
+                    />
+                  </div>
+                  <div className="listing-content">
+                    <h2>{listing.title || 'Untitled listing'}</h2>
+                    <p className="place"><MapPin size={16} aria-hidden="true" />{listing.place || 'Location not provided'}</p>
+                    <p className="price">{formatPrice(listing.price)}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : !error ? (
+            <div className="status-message category-transition">
+              <strong>No listings found.</strong>
+              <span>Try a broader search or choose another category.</span>
+            </div>
+          ) : null}
+        </div>
       </section>
     </main>
   );
