@@ -2,12 +2,12 @@ package com._look.api.controllers;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,7 +17,6 @@ import com._look.api.services.ListingService;
 
 import jakarta.validation.constraints.Size;
 
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 
@@ -25,6 +24,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RestController
 @RequestMapping("/listings")
 public class ListingController {
+
+    private static final Pattern SEARCH_PATTERN = Pattern.compile("^[a-zA-Z0-9 \\-]{3,50}$");
 
     private final ListingService listingService;
 
@@ -45,6 +46,9 @@ public class ListingController {
 
     @GetMapping("/search")
     public List<Listing> searchListings(@RequestParam("query") @Size(max = 20, message = "Keyword must be 20 characters or less") String query) {
+        if (!SEARCH_PATTERN.matcher(query).matches()) {
+            throw new IllegalArgumentException("Invalid search query");
+        }
         return listingService.searchListings(query);
     }
 
