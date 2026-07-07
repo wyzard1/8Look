@@ -74,11 +74,22 @@ export default function Home() {
     const indicator = categoryIndicatorRef.current;
     const activeButton = nav?.querySelector<HTMLButtonElement>('button.active');
 
-    if(!indicator || !activeButton || !nav) return;
+    if (!indicator || !activeButton || !nav) return;
 
-    indicator.style.width = `${activeButton.offsetWidth}px`;
-    indicator.style.transform = `translateX(${activeButton.offsetLeft}px)`;
+    const positionIndicator = () => {
+      const navRect = nav.getBoundingClientRect();
+      const buttonRect = activeButton.getBoundingClientRect();
+      const left = buttonRect.left - navRect.left + nav.scrollLeft;
 
+      indicator.style.width = `${buttonRect.width}px`;
+      indicator.style.transform = `translate3d(${left}px, 0, 0)`;
+    };
+
+    positionIndicator();
+    const resizeObserver = new ResizeObserver(positionIndicator);
+    resizeObserver.observe(nav);
+
+    return () => resizeObserver.disconnect();
   }, [selectedCategory]);
   useEffect(() => {
     const storedTheme = localStorage.getItem('8look-theme');
@@ -160,16 +171,6 @@ export default function Home() {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
-            <nav
-              ref={categoryNavRef}
-              aria-label="Listing categories"
-            >
-              <span
-                ref={categoryIndicatorRef}
-                className="category-indicator"
-                aria-hidden="true"
-              />
-            </nav>
           </form>
 
           <div className="account-actions">
@@ -182,7 +183,13 @@ export default function Home() {
           </div>
         </div>
 
-        <nav className="category-nav" aria-label="Listing categories">
+        <nav className="category-nav" aria-label="Listing categories"
+          ref={categoryNavRef}>
+            <span
+                ref={categoryIndicatorRef}
+                className="category-indicator"
+                aria-hidden="true"
+              />
           <button
             className={selectedCategory === null ? 'active' : ''}
             type="button"
