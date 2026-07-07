@@ -219,6 +219,7 @@ input:focus-visible {
 
 .category-nav button {
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   gap: 7px;
   min-height: 48px;
@@ -237,10 +238,6 @@ input:focus-visible {
   color: var(--foreground);
 }
 
-.category-nav button.active {
-  animation: category-tab-in 180ms ease-out;
-}
-
 .category-indicator {
   position: absolute;
   bottom: 0;
@@ -250,6 +247,8 @@ input:focus-visible {
   border-radius: 2px 2px 0 0;
   background: var(--accent);
   pointer-events: none;
+  z-index: 1;
+  will-change: width, transform;
   transition: width 240ms ease, transform 240ms ease;
 }
 
@@ -440,10 +439,6 @@ input:focus-visible {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-@keyframes category-tab-in {
-  50% { transform: translateY(-2px); }
 }
 
 @media (max-width: 960px) {
