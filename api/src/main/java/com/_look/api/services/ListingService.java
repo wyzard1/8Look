@@ -27,6 +27,10 @@ public class ListingService {
         return listingRepository.findAll();
     }
 
+    public Listing createListing(Listing listing) {
+        return listingRepository.save(listing);
+    }
+
     public List<Listing> searchListings(String keyword) {
         if (keyword == null || keyword.isBlank()) {
             return List.of();

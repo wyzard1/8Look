@@ -6,6 +6,8 @@ import java.util.Optional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,10 +26,9 @@ public class ListingController {
         this.listingService = listingService;
     }
 
-    @GetMapping("/{vendorId}")
-    public Optional<Listing> getListingByVendorId(@PathVariable Integer vendorId) {
-        
-        return listingService.getListingByVendorId(vendorId);
+    @PostMapping("/create")
+    public Listing createListing(@RequestBody Listing listing) {
+        return listingService.createListing(listing);
     }
 
     @GetMapping("/all")
@@ -41,4 +42,9 @@ public class ListingController {
         return listingService.searchListings(query);
     }
 
+    @GetMapping("/{vendorId}")
+    public Optional<Listing> getListingByVendorId(@PathVariable Integer vendorId) {
+        
+        return listingService.getListingByVendorId(vendorId);
+    }
 }

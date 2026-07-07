@@ -31,7 +31,7 @@ public class Listing {
     private Instant createdAt;
     private Instant updatedAt;
 
-    protected Listing() {
+    public Listing() {
     }
 
     public Listing(Integer listing_id,Integer seller_id, Integer category_id, String title, String description, Double price, String place, Integer view_count, Instant createdAt, Instant updatedAt, List<String> image_urls) {
@@ -97,5 +97,29 @@ public class Listing {
 
     public List<String> getImages() {
         return image_urls;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
+    }
+
+    public void setPlace(String place) {
+        this.place = place;
+    }
+
+    public void setSellerId(Integer seller_id) {
+        this.seller_id = seller_id;
+    }
+
+    public void setCategoryId(Integer category_id) {
+        this.category_id = category_id;
     }
 }
