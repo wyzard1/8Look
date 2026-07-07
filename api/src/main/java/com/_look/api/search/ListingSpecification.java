@@ -20,11 +20,10 @@ public static Specification<Listing> searchByKeyword(String keyword) {
 
             String searchPattern = "%" + keyword.toLowerCase() + "%";
             
-            // Search across multiple fields
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), searchPattern));
+            predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("title")), searchPattern));
             predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("description")), searchPattern));
-            predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("category")), searchPattern));
+            predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("place")), searchPattern));
 
             return criteriaBuilder.or(predicates.toArray(new Predicate[0]));
         };

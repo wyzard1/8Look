@@ -3,9 +3,13 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
@@ -14,6 +18,7 @@ import jakarta.persistence.Table;
 public class Listing {
 	
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer listing_id;
     private Integer seller_id;
     private Integer category_id;
@@ -25,6 +30,9 @@ public class Listing {
     private Integer view_count;
     private Instant createdAt;
     private Instant updatedAt;
+
+    protected Listing() {
+    }
 
     public Listing(Integer listing_id,Integer seller_id, Integer category_id, String title, String description, Double price, String place, Integer view_count, Instant createdAt, Instant updatedAt, List<String> image_urls) {
         this.listing_id = listing_id;
@@ -41,7 +49,8 @@ public class Listing {
     }
 
 
-    @ElementCollection
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    @Column(name = "image_urls", columnDefinition = "varchar[]")
     private List<String> image_urls = new ArrayList<>();
     
     
