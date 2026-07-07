@@ -13,6 +13,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com._look.api.entities.Listing;
 import com._look.api.services.ListingService;
 
+import jakarta.validation.constraints.Size;
+
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
+
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/listings")
@@ -37,8 +43,15 @@ public class ListingController {
     }
 
     @GetMapping("/search")
-    public List<Listing> searchListings(@RequestParam("query") String query) {
+    public List<Listing> searchListings(@RequestParam("query") @Size(max = 20, message = "Keyword must be 20 characters or less") String query) {
         return listingService.searchListings(query);
     }
 
+    @PostMapping("add")
+    public String postMethodName(@RequestBody String entity) {
+        //TODO: process POST request
+        
+        return entity;
+    }
+    
 }

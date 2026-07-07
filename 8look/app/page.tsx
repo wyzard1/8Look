@@ -22,23 +22,49 @@ export default function Home() {
     setError('');
     setListing(null);
 
+    const trimmedQuery = query.trim();
+    if (!trimmedQuery) {
+      setError('Please enter a search query');
+      setLoading(false);
+      return;
+    }
+    if (trimmedQuery.length > 100) {
+      setError('Search query must be 100 characters or less');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const apiBaseUrl = typeof window !== 'undefined' && window.location.hostname === 'localhost'
-        ? 'http://localhost:8080'
-        : 'http://spring-app:8080';
-      const response = await fetch(`${apiBaseUrl}/listings/search?query=${encodeURIComponent(query)}`);
+      const response = await fetch(`/api/listings/search?query=${encodeURIComponent(trimmedQuery)}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
       if (!response.ok) {
-        throw new Error('Unable to fetch listing');
+        throw new Error(`API request failed with status ${response.status}`);
       }
 
       const data = await response.json();
       if (Array.isArray(data) && data.length > 0) {
         setListing(data[0]);
       } else {
-        setError('No listing found for that ID.');
+        setError('No listing found for that query.');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong');
+      let sanitizedError = 'Something went wrong. Please try again.';
+      if (err instanceof Error) {
+        const message = err.message;
+        if (message.includes('Failed to fetch') || message.includes('CORS')) {
+          sanitizedError = 'Unable to connect to the API. Please try again later.';
+        } else if (message.includes('API request failed')) {
+          sanitizedError = 'API request failed. Please try again.';
+        } else {
+          sanitizedError = message.substring(0, 100);
+        }
+      }
+      setError(sanitizedError);
     } finally {
       setLoading(false);
     }
