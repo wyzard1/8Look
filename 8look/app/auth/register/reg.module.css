@@ -1,0 +1,6 @@
+
+.loginLinkContainer {
+  gap: 6px;
+  grid-column: -2 / -1;
+  justify-self: end;
+}
