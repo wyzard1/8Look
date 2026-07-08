@@ -137,7 +137,7 @@ export default function Home() {
     const cleanQuery = query.trim();
     cleanQuery ? setHasSearched(true) : setHasSearched(false);
     if (cleanQuery && (cleanQuery.length < 3 || cleanQuery.length > 20)) {
-      
+      setListings([]);
       setError('Use 3 to 20 characters for search.');
       return;
     }
