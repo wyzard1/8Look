@@ -1,6 +1,131 @@
+.registerPage {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  background:
+    radial-gradient(circle at top left, color-mix(in srgb, var(--accent) 14%, transparent), transparent 34rem),
+    radial-gradient(circle at bottom right, color-mix(in srgb, var(--secondary) 16%, transparent), transparent 30rem),
+    var(--background);
+  color: var(--foreground);
+}
+
+.registerPage :global(.header-top) {
+  grid-template-columns: auto 1fr auto;
+}
 
 .loginLinkContainer {
-  gap: 6px;
-  grid-column: -2 / -1;
+  display: flex;
   justify-self: end;
+}
+
+.registerSection {
+  width: min(100% - 32px, 430px);
+  place-self: center;
+  display: grid;
+  gap: 22px;
+  padding: 32px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  box-shadow: var(--shadow);
+  color: var(--foreground);
+  backdrop-filter: blur(14px);
+}
+
+.registerSection h1 {
+  margin: 0;
+  font-size: clamp(1.65rem, 5vw, 2.25rem);
+  line-height: 1.05;
+  font-weight: 850;
+  letter-spacing: 0;
+  color: var(--foreground);
+}
+
+.infoContainer {
+  display: grid;
+  gap: 16px;
+}
+
+.registerForm {
+  display: grid;
+  gap: 10px;
+}
+
+.registerForm h2 {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.2;
+  font-weight: 800;
+}
+
+.registerForm input {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 0 14px;
+  background: var(--surface-soft);
+  color: var(--foreground);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease,
+    transform 160ms ease;
+}
+
+.registerForm input:hover {
+  border-color: color-mix(in srgb, var(--secondary) 45%, var(--border));
+}
+
+.registerForm input:focus {
+  border-color: var(--secondary);
+  outline: 0;
+  background: var(--surface);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--secondary) 18%, transparent);
+  transform: translateY(-1px);
+}
+
+.registerForm button {
+  min-height: 48px;
+  margin-top: 10px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--accent);
+  color: #ffffff;
+  font-weight: 850;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.registerForm button:hover {
+  background: var(--accent-hover);
+  box-shadow: 0 10px 22px color-mix(in srgb, var(--accent) 24%, transparent);
+  transform: translateY(-1px);
+}
+
+.registerForm button:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 700px) {
+  .registerPage :global(.header-top) {
+    width: min(100% - 28px, 1240px);
+    min-height: 68px;
+    gap: 14px;
+  }
+
+  .registerSection {
+    align-self: start;
+    margin-top: 26px;
+    padding: 24px;
+  }
+
+  .registerForm input,
+  .registerForm button {
+    min-height: 50px;
+  }
 }
