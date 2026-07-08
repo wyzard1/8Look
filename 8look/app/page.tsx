@@ -130,10 +130,14 @@ export default function Home() {
     }
   }
 
+  const [hasSearched, setHasSearched] = useState(false);
+
   function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const cleanQuery = query.trim();
+    cleanQuery ? setHasSearched(true) : setHasSearched(false);
     if (cleanQuery && (cleanQuery.length < 3 || cleanQuery.length > 20)) {
+      
       setError('Use 3 to 20 characters for search.');
       return;
     }
@@ -215,7 +219,7 @@ export default function Home() {
         <div className="section-heading">
           <div>
             <p className="eyebrow">Marketplace</p>
-            <h1>{query.trim() ? 'Search results' : 'Fresh listings'}</h1>
+            <h1>{hasSearched ? 'Search results' : 'Fresh listings'}</h1>
           </div>
           {!loading && !error && <span>{visibleListings.length} listings</span>}
         </div>
@@ -239,8 +243,6 @@ export default function Home() {
               {visibleListings.map((listing) => (
                 <article className="listing-card" key={listing.id}>
                   <div className="listing-image-wrap">
-                    {/* Database hosts are dynamic, so a fixed Next Image allowlist is not viable here. */}
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={safeImageUrl(listing.images)}
                       alt=""
