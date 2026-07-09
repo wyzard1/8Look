@@ -3,6 +3,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -28,13 +29,15 @@ public class Listing {
     private Double price;
     private String place;
     private Integer view_count;
+    @Setter
     private Instant createdAt;
+    @Setter
     private Instant updatedAt;
 
     public Listing() {
     }
 
-    public Listing(Integer listing_id,Integer seller_id, Integer category_id, String title, String description, Double price, String place, Integer view_count, Instant createdAt, Instant updatedAt, List<String> image_urls) {
+    public Listing(Integer listing_id, Integer seller_id, Integer category_id, String title, String description, Double price, String place, Integer view_count, Instant createdAt, Instant updatedAt, List<String> image_urls) {
         this.listing_id = listing_id;
         this.seller_id = seller_id;
         this.category_id = category_id;
@@ -58,6 +61,8 @@ public class Listing {
 	public Integer getId() {
 		return listing_id;
 	}
+
+
 
     public Integer getSellerId() {
         return seller_id;
@@ -122,4 +127,5 @@ public class Listing {
     public void setCategoryId(Integer category_id) {
         this.category_id = category_id;
     }
+
 }
