@@ -9,7 +9,7 @@ import styles from "./reg.module.css";
 
 export default function RegisterPage() {
 
-
+  
 
 
 
