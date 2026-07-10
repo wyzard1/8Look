@@ -19,7 +19,7 @@ public class User {
     @Column(nullable = false)
     private String email;
     @Column(nullable = false)
-    private String password_hash;
+    private String password;
     @Column(nullable = false)
     private String phone_number;
     private String avatar_url;
@@ -86,12 +86,12 @@ public class User {
         this.phone_number = phone_number;
     }
 
-    public String getPassword_hash() {
-        return password_hash;
+    public String getPassword() {
+        return password;
     }
 
-    public void setPassword_hash(String password_hash) {
-        this.password_hash = password_hash;
+    public void setPassword(String password_hash) {
+        this.password = password_hash;
     }
 
     public String getEmail() {

@@ -1,13 +1,15 @@
 package DTO;
 
+import com._look.api.validation.ValidEmail;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
+
 
 public class UserDTO {
 
     @NotEmpty
     private String username;
 
+    @ValidEmail
     @NotEmpty
     private String email;
 

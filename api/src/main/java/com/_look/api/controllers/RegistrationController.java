@@ -1,17 +1,27 @@
 package com._look.api.controllers;
 
 import DTO.UserDTO;
-import org.springframework.web.bind.annotation.GetMapping;
+import com._look.api.repositories.UserRepository;
+import com._look.api.services.UserService;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-
 
 @RestController
 public class RegistrationController {
 
-    @GetMapping("/registration")
-    public UserDTO getRegistrationData()
+    private final UserService service;
+
+    public RegistrationController(UserService s)
     {
-        return new UserDTO();
+        this.service = s;
+    }
+
+    @PostMapping({"/registration"})
+    public void register(@Valid @RequestBody UserDTO dto) {
+        service.registerNewUser(dto);
+
     }
 
 }
