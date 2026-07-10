@@ -182,8 +182,8 @@ export default function Home() {
               <Sun className="sun-icon" size={20} />
               <Moon className="moon-icon" size={20} />
             </button>
-            <Link className="login-link" href="/login">Log in</Link>
-            <Link className="register-link" href="/register">Register</Link>
+            <Link className="login-link" href="/auth/login">Log in</Link>
+            <Link className="register-link" href="/auth/register">Register</Link>
           </div>
         </div>
 

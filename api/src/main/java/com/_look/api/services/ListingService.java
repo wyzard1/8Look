@@ -1,5 +1,6 @@
 package com._look.api.services;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,6 +29,8 @@ public class ListingService {
     }
 
     public Listing createListing(Listing listing) {
+        listing.setCreatedAt(Instant.now());
+        listing.setUpdatedAt(Instant.now());
         return listingRepository.save(listing);
     }
 

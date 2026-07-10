@@ -20,7 +20,6 @@ import jakarta.validation.constraints.Size;
 import org.springframework.web.bind.annotation.RequestBody;
 
 
-@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/listings")
 public class ListingController {
