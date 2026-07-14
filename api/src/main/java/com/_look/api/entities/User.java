@@ -30,6 +30,12 @@ public class User {
     private Instant updated_at;
     private Instant last_login;
 
+    public User()
+    {
+        super();
+        this.is_verified=false;
+    }
+
     public Instant getLast_login() {
         return last_login;
     }

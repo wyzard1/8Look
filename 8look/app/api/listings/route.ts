@@ -34,6 +34,10 @@ function getApiBaseUrl() {
   return `http://${host}:${port}`;
 }
 
+export async function POST() {
+  return NextResponse.json({ error: 'Method not allowed.' }, { status: 405 });
+}
+
 export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams.get('query')?.trim() ?? '';
   if (query && !searchPattern.test(query)) {

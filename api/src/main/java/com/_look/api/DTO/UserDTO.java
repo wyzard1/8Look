@@ -1,4 +1,4 @@
-package DTO;
+package com._look.api.DTO;
 
 import com._look.api.validation.ValidEmail;
 import jakarta.validation.constraints.NotEmpty;
