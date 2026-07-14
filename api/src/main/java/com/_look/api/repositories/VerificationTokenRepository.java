@@ -1,4 +1,20 @@
 package com._look.api.repositories;
 
-public interface VerificationTokenRepository {
+import com._look.api.entities.User;
+import com._look.api.entities.VerificationToken;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Date;
+import java.util.List;
+
+public interface VerificationTokenRepository
+        extends JpaRepository<VerificationToken, Long> {
+
+    VerificationToken findByToken(String token);
+
+    VerificationToken findByUser(User user);
+
+    List<VerificationToken> findByExpiryDateLessThan(Date now);
+
+    void deleteByExpiryDateLessThan(Date now);
 }
