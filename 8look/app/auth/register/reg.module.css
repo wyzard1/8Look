@@ -1,12 +1,18 @@
-.registerPage {
+.registerLayout {
   min-height: 100dvh;
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: 1fr auto;
   background:
     radial-gradient(circle at top left, color-mix(in srgb, var(--accent) 14%, transparent), transparent 34rem),
     radial-gradient(circle at bottom right, color-mix(in srgb, var(--secondary) 16%, transparent), transparent 30rem),
     var(--background);
   color: var(--foreground);
+}
+
+.registerPage {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 0;
 }
 
 .registerPage :global(.header-top) {
@@ -16,6 +22,18 @@
 .loginLinkContainer {
   display: flex;
   justify-self: end;
+}
+
+.footer 
+{
+    background-color: var(--background);
+    border-top: 1px solid var(--border);
+    color: gray;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 72px;
+    padding: 16px;
 }
 
 .registerSection {

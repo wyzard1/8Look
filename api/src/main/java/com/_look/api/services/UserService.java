@@ -20,7 +20,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
 
@@ -32,7 +31,6 @@ public class UserService implements IUserService{
     private final PasswordEncoder passwordEncoder;
     private final VerificationTokenRepository tokenRepository;
 
-    private final MessageSource messages;
 
     private final JavaMailSender mailSender;
 
@@ -42,7 +40,6 @@ public class UserService implements IUserService{
         this.passwordEncoder = passwordEncoder;
         this.tokenRepository = tokenRepository;
         this.mailSender = mailSender;
-        this.messages = messages;
     }
 
     public String encodePassword(String password) {
@@ -120,6 +117,8 @@ public class UserService implements IUserService{
         String token = UUID.randomUUID().toString();
         createVerificationToken(user, token);
 
+        String verifyURL = "http://"+System.getenv("APP_HOST")+":"+System.getenv("APP_PORT")
+        +"/"+"registrationConfirm?token="+token;
         String recipientAdress = user.getEmail();
         String subject = "8look Registration confirmation";
         String message = """
@@ -129,7 +128,7 @@ public class UserService implements IUserService{
         SimpleMailMessage email = new SimpleMailMessage();
         email.setSubject(subject);
         email.setTo(recipientAdress);
-        email.setText(message + "\r\n" + token);
+        email.setText(message + "\r\n" + verifyURL);
         mailSender.send(email);
     }
 
