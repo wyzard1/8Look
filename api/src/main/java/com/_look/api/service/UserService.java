@@ -12,6 +12,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +26,7 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 
 @Transactional
 @Service
-public class UserService implements IUserService{
+public class UserService implements IUserService {
 
     private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
@@ -118,7 +119,7 @@ public class UserService implements IUserService{
         createVerificationToken(user, token);
 
         String verifyURL = "http://"+System.getenv("APP_HOST")+":"+System.getenv("APP_PORT")
-        +"/"+"registrationConfirm?token="+token;
+        +"/"+"auth/confirmRegistration?token="+token;
         String recipientAdress = user.getEmail();
         String subject = "8look Registration confirmation";
         String message = """
