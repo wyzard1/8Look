@@ -1,4 +1,4 @@
-package com._look.api.services;
+package com._look.api.service;
 
 import java.time.Instant;
 import java.util.List;

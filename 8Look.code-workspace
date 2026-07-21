@@ -1,0 +1,20 @@
+{
+  "folders": [
+    {
+      "name": "api",
+      "path": "api"
+    },
+    {
+      "name": "8look",
+      "path": "8look"
+    }
+  ],
+  "settings": {
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.compile.nullAnalysis.mode": "disabled",
+    "java.errors.incompleteClasspath.severity": "ignore",
+    "java.import.gradle.enabled": true,
+    "java.import.gradle.wrapper.enabled": true,
+    "java.import.gradle.annotationProcessing.enabled": true
+  }
+}

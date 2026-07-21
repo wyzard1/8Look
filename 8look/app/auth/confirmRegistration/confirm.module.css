@@ -1,0 +1,77 @@
+.confirmLayout {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  background:
+    radial-gradient(circle at top left, color-mix(in srgb, var(--accent) 14%, transparent), transparent 34rem),
+    radial-gradient(circle at bottom right, color-mix(in srgb, var(--secondary) 16%, transparent), transparent 30rem),
+    var(--background);
+  color: var(--foreground);
+}
+
+.registerPage {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 0;
+}
+
+.registerPage :global(.header-top) {
+  grid-template-columns: auto 1fr auto;
+}
+
+.loginLinkContainer {
+  display: flex;
+  justify-self: end;
+}
+
+.footer 
+{
+    background-color: var(--background);
+    border-top: 1px solid var(--border);
+    color: gray;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 72px;
+    padding: 16px;
+
+}
+
+.buttonContainer
+{
+    width: min(100% - 32px, 430px);
+  place-self: center;
+  display: grid;
+  gap: 22px;
+  padding: 32px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  box-shadow: var(--shadow);
+  color: var(--foreground);
+  backdrop-filter: blur(14px);
+}
+
+.verifyButton {
+  min-height: 48px;
+  margin-top: 10px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--accent);
+  color: #ffffff;
+  font-weight: 850;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+@media (max-width: 700px) {
+  .registerPage :global(.header-top) {
+    width: min(100% - 28px, 1240px);
+    min-height: 68px;
+    gap: 14px;
+  }
+
+}
