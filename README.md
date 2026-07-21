@@ -1,8 +1,4 @@
-#Notice
-Phone number/email verification and password resetting are not yet implemented.
-I dont want to pay for sms/smtp servers/domains.
-If this were to be deployed in a real production environment,
-those could be added.
+# Notice
 
 In the .env file you need to put:
 
@@ -21,3 +17,7 @@ DB_PASSWORD =
 DB_USER = 
 
 DB = 
+
+EMAIL_USERNAME =
+
+EMAIL_PASSWORD =
