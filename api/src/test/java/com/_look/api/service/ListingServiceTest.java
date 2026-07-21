@@ -1,4 +1,4 @@
-package com._look.api.services;
+package com._look.api.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;

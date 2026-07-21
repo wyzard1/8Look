@@ -1,4 +1,4 @@
-package com._look.api.services;
+package com._look.api.service;
 
 import com._look.api.DTO.UserDTO;
 import com._look.api.entities.User;

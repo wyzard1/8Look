@@ -1,4 +1,4 @@
-package com._look.api.services;
+package com._look.api.service;
 
 import com._look.api.DTO.UserDTO;
 import com._look.api.entities.Role;
@@ -6,13 +6,16 @@ import com._look.api.entities.User;
 import com._look.api.entities.VerificationToken;
 import com._look.api.repositories.UserRepository;
 import com._look.api.repositories.VerificationTokenRepository;
+import com._look.api.validation.AuthenticationRequest;
+import com._look.api.validation.AuthenticationResponse;
 import jakarta.transaction.Transactional;
 
 import org.springframework.context.MessageSource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -31,16 +34,19 @@ public class UserService implements IUserService {
     private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
     private final VerificationTokenRepository tokenRepository;
-
+    private final JwtService jwtService;
 
     private final JavaMailSender mailSender;
+    private final AuthenticationManager authenticationManager;
 
     public UserService(UserRepository repository, PasswordEncoder passwordEncoder,
-         VerificationTokenRepository tokenRepository, JavaMailSender mailSender, MessageSource messages) {
+                       VerificationTokenRepository tokenRepository, JwtService jwtService, JavaMailSender mailSender, MessageSource messages, AuthenticationManager authenticationManager) {
         this.repository = repository;
         this.passwordEncoder = passwordEncoder;
         this.tokenRepository = tokenRepository;
         this.mailSender = mailSender;
+        this.jwtService = jwtService;
+        this.authenticationManager = authenticationManager;
     }
 
     public String encodePassword(String password) {
@@ -98,7 +104,7 @@ public class UserService implements IUserService {
         List<VerificationToken> l = tokenRepository.findByExpiryDateLessThan(now);
         for(VerificationToken v : l)
         {
-         if(v.getUser().getIs_verified() == false);
+         if(v.getUser().isEnabled() == false);
          {
             repository.delete(v.getUser());
          }
@@ -138,10 +144,24 @@ public class UserService implements IUserService {
     }
 
     private boolean emailExists(String email) {
-        return repository.findByEmail(email) != null;
+        return repository.findByEmail(email).isPresent();
     }
     
     private boolean usernameExists(String username) {
-        return repository.findByUsername(username) != null;
+        return repository.findByUsername(username).isPresent();
+    }
+
+    public AuthenticationResponse authenticate(AuthenticationRequest request)
+    {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()
+                )
+        );
+
+        var user = repository.findByEmail(request.getEmail()).orElseThrow();
+        var jwtToken = jwtService.generateToken(user);
+        return AuthenticationResponse.builder().token(jwtToken).build();
     }
 }

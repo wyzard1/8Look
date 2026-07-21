@@ -23,3 +23,9 @@ spring:
           auth: true
           starttls:
             enable: true
+  security:
+    jwt:
+      key: ${JWT_SECRET}
+      cookie:
+        name: authToken
+        expires-in: 900

@@ -1,4 +1,4 @@
-package com._look.api.services;
+package com._look.api.service;
 
 public class UserAlreadyExistException extends RuntimeException{
     public UserAlreadyExistException(String message){

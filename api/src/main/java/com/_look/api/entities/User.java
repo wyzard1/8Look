@@ -3,12 +3,17 @@ package com._look.api.entities;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.Instant;
+import java.util.Collection;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements UserDetails {
     @Getter
     @Setter
     @Id
@@ -24,16 +29,21 @@ public class User {
     private String phone_number;
     private String avatar_url;
     private Boolean is_verified;
+    @Getter
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private Role role;
     private Instant created_at;
     private Instant updated_at;
     private Instant last_login;
 
-    public User()
-    {
+    public User(){
         super();
         this.is_verified=false;
+    }
+
+    public Collection<? extends  GrantedAuthority> getAuthorities(){
+       return List.of(new SimpleGrantedAuthority(role.name()));
     }
 
     public Instant getLast_login() {
@@ -60,16 +70,8 @@ public class User {
         this.created_at = created_at;
     }
 
-    public Role getRole() {
-        return role;
-    }
-
     public void setRole(Role role) {
         this.role = role;
-    }
-
-    public Boolean getIs_verified() {
-        return is_verified;
     }
 
     public void setIs_verified(Boolean is_verified) {
@@ -110,6 +112,11 @@ public class User {
 
     public String getUsername() {
         return username;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return is_verified;
     }
 
     public void setUsername(String username) {
