@@ -34,7 +34,9 @@ public class JwtService {
     public boolean isTokenValid(String token, UserDetails userDetails)
     {
         final String email = extractEmail(token);
-        return email.equals(userDetails.getUsername()) && !isTokenExipred(token);
+        User user = (User) userDetails;
+
+        return email.equals(user.getEmail()) && !isTokenExipred(token);
     }
 
     private boolean isTokenExipred(String token)

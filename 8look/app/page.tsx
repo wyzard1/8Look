@@ -25,6 +25,14 @@ type Listing = {
   images?: string[] | null;
 };
 
+type User = 
+{
+  userid: number;
+  email: string;
+  username: string;
+  avatar_url?: string;
+}
+
 const categories = [
   { id: 1, label: 'Immovables', icon: Warehouse },
   { id: 2, label: 'Cars', icon: CarFront },
@@ -64,10 +72,13 @@ export default function Home() {
   const [query, setQuery] = useState('');
   const [listings, setListings] = useState<Listing[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [userData, setUserData] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isLoggedIn, setLoggedin] = useState(false)
   const categoryNavRef = useRef<HTMLElement>(null);
   const categoryIndicatorRef = useRef<HTMLSpanElement>(null);
+
 
   useLayoutEffect(() => {
     const nav = categoryNavRef.current;

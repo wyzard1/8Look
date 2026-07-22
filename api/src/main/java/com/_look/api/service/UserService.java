@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
@@ -73,11 +74,6 @@ public class UserService implements IUserService {
         confirmRegistration(u);
 
         return u;
-    }
-
-    @Override
-    public User registerNewUserAccount(UserDTO userDto) throws UserAlreadyExistException {
-        return null;
     }
 
     @Override

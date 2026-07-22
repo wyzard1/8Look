@@ -8,9 +8,6 @@ public interface IUserService {
 
     User registerNewUser(UserDTO dto) throws UserAlreadyExistException;
 
-    User registerNewUserAccount(UserDTO userDto)
-            throws UserAlreadyExistException;
-
     User getUser(String verificationToken);
 
     void saveRegisteredUser(User user);
