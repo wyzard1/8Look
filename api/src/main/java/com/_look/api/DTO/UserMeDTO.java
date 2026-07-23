@@ -3,6 +3,8 @@ package com._look.api.DTO;
 
 import jakarta.validation.constraints.NotEmpty;
 
+import java.time.Instant;
+
 
 public class UserMeDTO {
 
@@ -12,6 +14,10 @@ public class UserMeDTO {
     private String email;
 
     private String avatar_url;
+
+    private long id;
+
+    private Instant last_login;
 
     public String getUsername() {
         return username;
@@ -38,4 +44,19 @@ public class UserMeDTO {
     }
 
 
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public Instant getLast_login() {
+        return last_login;
+    }
+
+    public void setLast_login(Instant last_login) {
+        this.last_login = last_login;
+    }
 }

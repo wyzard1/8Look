@@ -81,20 +81,24 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<UserMeDTO> fetchUser(Authentication authentication) {
+
         Optional<User> u = userRepository.findByUsername(authentication.getName());
+        System.out.println(authentication.getName());
         if(u.isEmpty())
         {
             return ResponseEntity.notFound().build();
         }
         User user = u.get();
+        user.setLast_login(Instant.now());
 
         UserMeDTO dto = new UserMeDTO();
+        dto.setId(user.getId());
         dto.setEmail(user.getEmail());
         dto.setUsername(user.getUsername());
         dto.setAvatarUrl(user.getAvatar_url());
+        dto.setLast_login(user.getLast_login());
 
 
-        user.setLast_login(Instant.now());
         userRepository.save(user);
 
         return ResponseEntity.ok(dto);

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { FormEvent, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { getCurrentUser, type User } from '@/lib/auth';
 
 type Listing = {
   id: number;
@@ -24,14 +25,6 @@ type Listing = {
   place?: string | null;
   images?: string[] | null;
 };
-
-type User = 
-{
-  userid: number;
-  email: string;
-  username: string;
-  avatar_url?: string;
-}
 
 const categories = [
   { id: 1, label: 'Immovables', icon: Warehouse },
@@ -72,13 +65,11 @@ export default function Home() {
   const [query, setQuery] = useState('');
   const [listings, setListings] = useState<Listing[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-  const [userData, setUserData] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [isLoggedIn, setLoggedin] = useState(false)
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const categoryNavRef = useRef<HTMLElement>(null);
   const categoryIndicatorRef = useRef<HTMLSpanElement>(null);
-
 
   useLayoutEffect(() => {
     const nav = categoryNavRef.current;
@@ -116,6 +107,21 @@ export default function Home() {
     return () => controller.abort();
   }, []);
 
+  useEffect(() => {
+    let ignore = false;
+
+    async function loadCurrentUser() {
+      const user = await getCurrentUser();
+      if (!ignore) setCurrentUser(user);
+    }
+
+    void loadCurrentUser();
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
   async function loadListings(searchQuery: string, signal?: AbortSignal) {
     setLoading(true);
     setError('');
@@ -146,7 +152,7 @@ export default function Home() {
   function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const cleanQuery = query.trim();
-    cleanQuery ? setHasSearched(true) : setHasSearched(false);
+    setHasSearched(Boolean(cleanQuery));
     if (cleanQuery && (cleanQuery.length < 3 || cleanQuery.length > 20)) {
       setListings([]);
       setError('Use 3 to 20 characters for search.');
@@ -192,9 +198,15 @@ export default function Home() {
             <button className="theme-button" type="button" onClick={toggleTheme} aria-label="Toggle color theme" title="Toggle color theme">
               <Sun className="sun-icon" size={20} />
               <Moon className="moon-icon" size={20} />
-            </button>
-            <Link className="login-link" href="/auth/logon">Log in</Link>
-            <Link className="register-link" href="/auth/register">Register</Link>
+            </button>   
+            {loading ? <div></div> : (currentUser ? (
+              <span className="login-link">{currentUser.username}</span>
+            ) : (
+              <>
+                <Link className="login-link" href="/auth/logon">Log in</Link>
+                <Link className="register-link" href="/auth/register">Register</Link>
+              </>
+            ))}
           </div>
         </div>
 
