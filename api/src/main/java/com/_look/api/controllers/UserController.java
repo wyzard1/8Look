@@ -1,6 +1,7 @@
 package com._look.api.controllers;
 
 import com._look.api.DTO.UserDTO;
+import com._look.api.DTO.UserMeDTO;
 import com._look.api.entities.User;
 import com._look.api.entities.VerificationToken;
 import com._look.api.repositories.UserRepository;
@@ -78,17 +79,25 @@ public class UserController {
         return new ResponseEntity<Void>(HttpStatus.OK);
     }
 
-    @GetMapping("/fetchUser")
-    public ResponseEntity<Optional<User>> fetchUser(Authentication authentication) {
+    @GetMapping("/me")
+    public ResponseEntity<UserMeDTO> fetchUser(Authentication authentication) {
         Optional<User> u = userRepository.findByUsername(authentication.getName());
-        
-        u.ifPresent(user -> 
-            {
-                user.setLast_login(Instant.now());
-                userRepository.save(user);
-            });
+        if(u.isEmpty())
+        {
+            return ResponseEntity.notFound().build();
+        }
+        User user = u.get();
 
-        return ResponseEntity.ok(u);
+        UserMeDTO dto = new UserMeDTO();
+        dto.setEmail(user.getEmail());
+        dto.setUsername(user.getUsername());
+        dto.setAvatarUrl(user.getAvatar_url());
+
+
+        user.setLast_login(Instant.now());
+        userRepository.save(user);
+
+        return ResponseEntity.ok(dto);
     }
     
 

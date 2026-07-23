@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
@@ -158,6 +157,6 @@ public class UserService implements IUserService {
 
         var user = repository.findByEmail(request.getEmail()).orElseThrow();
         var jwtToken = jwtService.generateToken(user);
-        return AuthenticationResponse.builder().token(jwtToken).build();
+        return new AuthenticationResponse(jwtToken);
     }
 }
