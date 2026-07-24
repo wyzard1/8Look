@@ -20,6 +20,7 @@ import Link from 'next/link';
 import { FormEvent, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { getCurrentUser, type User } from '@/lib/auth';
 import Dropdown, { DropdownItem } from './components/Dropdown';
+import { useRouter } from 'next/navigation';
 
 type Listing = {
   id: number;
@@ -75,6 +76,7 @@ export default function Home() {
   const [userImage, setUserImage] = useState('/default-user-avatar.ico');
   const categoryNavRef = useRef<HTMLElement>(null);
   const categoryIndicatorRef = useRef<HTMLSpanElement>(null);
+  const router = useRouter();
 
   useLayoutEffect(() => {
     const nav = categoryNavRef.current;
@@ -126,6 +128,20 @@ export default function Home() {
       ignore = true;
     };
   }, []);
+
+  async function logOut() {
+    const response = await fetch('/api/logout', {
+      method: 'POST',
+    });
+
+    if (!response.ok) {
+      setError('Log out failed. Please try again.');
+      return;
+    }
+
+    setCurrentUser(null);
+    router.refresh();
+  }
 
   async function loadListings(searchQuery: string, signal?: AbortSignal) {
     setLoading(true);
@@ -224,7 +240,7 @@ export default function Home() {
                   </DropdownItem>
                   <DropdownItem>
                     <LogOut size={16} aria-hidden="true" />
-                    <Link href="/profile">Log out</Link>
+                    <button type="button" onClick={logOut}>Log out</button>
                   </DropdownItem>
                 </Dropdown>
               </div>
