@@ -6,16 +6,20 @@ import {
   Dumbbell,
   House,
   Laptop,
+  Newspaper,
   MapPin,
   Moon,
   Search,
+  Settings,
   Shirt,
+  LogOut,
   Sun,
   Warehouse,
 } from 'lucide-react';
 import Link from 'next/link';
 import { FormEvent, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { getCurrentUser, type User } from '@/lib/auth';
+import Dropdown, { DropdownItem } from './components/Dropdown';
 
 type Listing = {
   id: number;
@@ -68,6 +72,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [userImage, setUserImage] = useState('/default-user-avatar.ico');
   const categoryNavRef = useRef<HTMLElement>(null);
   const categoryIndicatorRef = useRef<HTMLSpanElement>(null);
 
@@ -200,7 +205,29 @@ export default function Home() {
               <Moon className="moon-icon" size={20} />
             </button>   
             {loading ? <div></div> : (currentUser ? (
-              <span className="login-link">{currentUser.username}</span>
+              <div className="profile-container">
+                <span className="login-link">{currentUser.username}</span>
+                <Dropdown
+                  trigger={(
+                    <button className="menu-button" type="button">
+                      <img src={userImage} alt="" />
+                    </button>
+                  )}
+                >
+                  <DropdownItem>
+                    <Settings size={16} aria-hidden="true" />
+                    <Link href="/profile">Profile options</Link>
+                  </DropdownItem>
+                  <DropdownItem>
+                    <Newspaper size={16} aria-hidden="true" />
+                    <Link href="/profile">New listing</Link>
+                  </DropdownItem>
+                  <DropdownItem>
+                    <LogOut size={16} aria-hidden="true" />
+                    <Link href="/profile">Log out</Link>
+                  </DropdownItem>
+                </Dropdown>
+              </div>
             ) : (
               <>
                 <Link className="login-link" href="/auth/logon">Log in</Link>
