@@ -1,8 +1,6 @@
 package com._look.api.entities;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,8 +12,6 @@ import java.util.List;
 @Entity
 @Table(name = "users")
 public class User implements UserDetails {
-    @Getter
-    @Setter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -29,7 +25,6 @@ public class User implements UserDetails {
     private String phone_number;
     private String avatar_url;
     private Boolean is_verified;
-    @Getter
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Role role;
@@ -40,6 +35,14 @@ public class User implements UserDetails {
     public User(){
         super();
         this.is_verified=false;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Collection<? extends  GrantedAuthority> getAuthorities(){
@@ -72,6 +75,10 @@ public class User implements UserDetails {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public Role getRole() {
+        return role;
     }
 
     public void setIs_verified(Boolean is_verified) {

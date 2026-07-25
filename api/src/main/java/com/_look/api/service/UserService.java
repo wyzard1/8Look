@@ -76,11 +76,6 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public User registerNewUserAccount(UserDTO userDto) throws UserAlreadyExistException {
-        return null;
-    }
-
-    @Override
     public User getUser(String verificationToken) {
         User u = tokenRepository.findByToken(verificationToken).getUser();
         return u;
@@ -162,6 +157,6 @@ public class UserService implements IUserService {
 
         var user = repository.findByEmail(request.getEmail()).orElseThrow();
         var jwtToken = jwtService.generateToken(user);
-        return AuthenticationResponse.builder().token(jwtToken).build();
+        return new AuthenticationResponse(jwtToken);
     }
 }

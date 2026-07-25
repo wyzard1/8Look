@@ -6,15 +6,21 @@ import {
   Dumbbell,
   House,
   Laptop,
+  Newspaper,
   MapPin,
   Moon,
   Search,
+  Settings,
   Shirt,
+  LogOut,
   Sun,
   Warehouse,
 } from 'lucide-react';
 import Link from 'next/link';
 import { FormEvent, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { getCurrentUser, type User } from '@/lib/auth';
+import Dropdown, { DropdownItem } from './components/Dropdown';
+import { useRouter } from 'next/navigation';
 
 type Listing = {
   id: number;
@@ -66,8 +72,11 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [userImage, setUserImage] = useState('/default-user-avatar.ico');
   const categoryNavRef = useRef<HTMLElement>(null);
   const categoryIndicatorRef = useRef<HTMLSpanElement>(null);
+  const router = useRouter();
 
   useLayoutEffect(() => {
     const nav = categoryNavRef.current;
@@ -105,6 +114,35 @@ export default function Home() {
     return () => controller.abort();
   }, []);
 
+  useEffect(() => {
+    let ignore = false;
+
+    async function loadCurrentUser() {
+      const user = await getCurrentUser();
+      if (!ignore) setCurrentUser(user);
+    }
+
+    void loadCurrentUser();
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  async function logOut() {
+    const response = await fetch('/api/logout', {
+      method: 'POST',
+    });
+
+    if (!response.ok) {
+      setError('Log out failed. Please try again.');
+      return;
+    }
+
+    setCurrentUser(null);
+    router.refresh();
+  }
+
   async function loadListings(searchQuery: string, signal?: AbortSignal) {
     setLoading(true);
     setError('');
@@ -135,7 +173,7 @@ export default function Home() {
   function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const cleanQuery = query.trim();
-    cleanQuery ? setHasSearched(true) : setHasSearched(false);
+    setHasSearched(Boolean(cleanQuery));
     if (cleanQuery && (cleanQuery.length < 3 || cleanQuery.length > 20)) {
       setListings([]);
       setError('Use 3 to 20 characters for search.');
@@ -181,9 +219,37 @@ export default function Home() {
             <button className="theme-button" type="button" onClick={toggleTheme} aria-label="Toggle color theme" title="Toggle color theme">
               <Sun className="sun-icon" size={20} />
               <Moon className="moon-icon" size={20} />
-            </button>
-            <Link className="login-link" href="/auth/login">Log in</Link>
-            <Link className="register-link" href="/auth/register">Register</Link>
+            </button>   
+            {loading ? <div></div> : (currentUser ? (
+              <div className="profile-container">
+                <span className="login-link">{currentUser.username}</span>
+                <Dropdown
+                  trigger={(
+                    <button className="menu-button" type="button">
+                      <img src={userImage} alt="" />
+                    </button>
+                  )}
+                >
+                  <DropdownItem>
+                    <Settings size={16} aria-hidden="true" />
+                    <Link href="/profile">Profile options</Link>
+                  </DropdownItem>
+                  <DropdownItem>
+                    <Newspaper size={16} aria-hidden="true" />
+                    <Link href="/profile">New listing</Link>
+                  </DropdownItem>
+                  <DropdownItem>
+                    <LogOut size={16} aria-hidden="true" />
+                    <button type="button" onClick={logOut}>Log out</button>
+                  </DropdownItem>
+                </Dropdown>
+              </div>
+            ) : (
+              <>
+                <Link className="login-link" href="/auth/logon">Log in</Link>
+                <Link className="register-link" href="/auth/register">Register</Link>
+              </>
+            ))}
           </div>
         </div>
 

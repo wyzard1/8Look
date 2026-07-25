@@ -1,6 +1,7 @@
 package com._look.api.controllers;
 
 import com._look.api.DTO.UserDTO;
+import com._look.api.DTO.UserMeDTO;
 import com._look.api.entities.User;
 import com._look.api.entities.VerificationToken;
 import com._look.api.repositories.UserRepository;
@@ -17,11 +18,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.util.Calendar;
+import java.util.Optional;
 
 import org.springframework.http.ResponseCookie;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 public class UserController {
@@ -71,6 +78,32 @@ public class UserController {
         service.deleteToken(verificationToken);
         return new ResponseEntity<Void>(HttpStatus.OK);
     }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserMeDTO> fetchUser(Authentication authentication) {
+
+        Optional<User> u = userRepository.findByUsername(authentication.getName());
+        System.out.println(authentication.getName());
+        if(u.isEmpty())
+        {
+            return ResponseEntity.notFound().build();
+        }
+        User user = u.get();
+        user.setLast_login(Instant.now());
+
+        UserMeDTO dto = new UserMeDTO();
+        dto.setId(user.getId());
+        dto.setEmail(user.getEmail());
+        dto.setUsername(user.getUsername());
+        dto.setAvatarUrl(user.getAvatar_url());
+        dto.setLast_login(user.getLast_login());
+
+
+        userRepository.save(user);
+
+        return ResponseEntity.ok(dto);
+    }
+    
 
     @PostMapping("/authenticate")
     public ResponseEntity<AuthenticationResponse> logOn (@RequestBody AuthenticationRequest request, HttpServletResponse response)

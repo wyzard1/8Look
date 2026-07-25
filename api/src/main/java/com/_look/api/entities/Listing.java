@@ -3,7 +3,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -29,9 +28,7 @@ public class Listing {
     private Double price;
     private String place;
     private Integer view_count;
-    @Setter
     private Instant createdAt;
-    @Setter
     private Instant updatedAt;
 
     public Listing() {
@@ -126,6 +123,14 @@ public class Listing {
 
     public void setCategoryId(Integer category_id) {
         this.category_id = category_id;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
 }
