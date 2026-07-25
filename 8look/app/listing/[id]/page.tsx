@@ -1,35 +1,28 @@
 'use client';
 
 import {
+  Heart,
   Newspaper,
   Moon,
+  MapPin,
+  MessageCircle,
   Search,
   Settings,
   LogOut,
   Sun,
 } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
-import { FormEvent, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getCurrentUser, type User } from '@/lib/auth';
 import Dropdown, { DropdownItem } from '../../components/Dropdown';
 import { useRouter } from 'next/navigation';
+import styles from './listing.module.css';
 
-
-function formatPrice(price?: number | null) {
-  if (typeof price !== 'number' || !Number.isFinite(price)) return 'Price on request';
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'EUR',
-    maximumFractionDigits: 0,
-  }).format(price);
-}
-
-export default function Home() {
+export default function ProductPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [userImage, setUserImage] = useState('/default-user-avatar.ico');
-  const [error, setError] = useState('');
+  const [userImage] = useState('/default-user-avatar.ico');
   const router = useRouter();
-
 
   useEffect(() => {
     let ignore = false;
@@ -52,7 +45,6 @@ export default function Home() {
     });
 
     if (!response.ok) {
-      setError('Log out failed. Please try again.');
       return;
     }
 
@@ -60,13 +52,11 @@ export default function Home() {
     router.refresh();
   }
 
-
   function toggleTheme() {
     const nextDarkMode = document.documentElement.dataset.theme !== 'dark';
     document.documentElement.dataset.theme = nextDarkMode ? 'dark' : 'light';
     localStorage.setItem('8look-theme', nextDarkMode ? 'dark' : 'light');
   }
-
 
   return (
     <main>
@@ -97,7 +87,7 @@ export default function Home() {
                 <Dropdown
                   trigger={(
                     <button className="menu-button" type="button">
-                      <img src={userImage} alt="" />
+                      <Image src={userImage} alt="" width={40} height={40} />
                     </button>
                   )}
                 >
@@ -124,7 +114,72 @@ export default function Home() {
           </div>
         </div>
       </header>
-            <h1>TEMPLATE</h1>
+
+      <section className={styles.productPage}>
+        <div className={styles.productGallery}>
+          <div className={styles.productImageWrap}>
+            <Image src="/listing-placeholder.png" alt="" fill priority sizes="(max-width: 960px) 100vw, 60vw" />
+          </div>
+          <div className={styles.productThumbnails} aria-label="Listing photos">
+            <button className={styles.active} type="button">
+              <Image src="/listing-placeholder.png" alt="" fill sizes="33vw" />
+            </button>
+            <button type="button">
+              <Image src="/listing-placeholder.png" alt="" fill sizes="33vw" />
+            </button>
+            <button type="button">
+              <Image src="/listing-placeholder.png" alt="" fill sizes="33vw" />
+            </button>
+          </div>
+        </div>
+
+        <article className={styles.productDetails}>
+          <div>
+            <p className={styles.eyebrow}>Listing details</p>
+            <h1>Product title</h1>
+            <p className={styles.productLocation}>
+              <MapPin size={18} aria-hidden="true" />
+              Location not provided
+            </p>
+          </div>
+
+          <p className={styles.productPrice}>Price on request</p>
+
+          <p className={styles.viewCount}>0 views</p>
+
+          <div className={styles.productDescription}>
+            <h2>Description</h2>
+            <p>
+              Add the product description here. This area is ready for listing
+              details such as condition, size, features, pickup options, and
+              anything else a buyer should know before contacting the seller.
+                            Add the product description here. This area is ready for listing
+              details such as condition, size, features, pickup options, and
+              anything else a buyer should know before contacting the seller.
+                            Add the product description here. This area is ready for listing
+              details such as condition, size, features, pickup options, and
+              anything else a buyer should know before contacting the seller.
+                            Add the product description here. This area is ready for listing
+              details such as condition, size, features, pickup options, and
+              anything else a buyer should know before contacting the seller.
+                            Add the product description here. This area is ready for listing
+              details such as condition, size, features, pickup options, and
+              anything else a buyer should know before contacting the seller.              Add the product description here. This area is ready for listing
+              details such as condition, size, features, pickup options, and
+              anything else a buyer should know before contacting the seller.              Add the product description here. This area is ready for listing
+              details such as condition, size, features, pickup options, and
+              anything else a buyer should know before contacting the seller.
+            </p>
+          </div>
+
+          <div className={styles.productActions}>
+            <button className={styles.contactButton} type="button">
+              <MessageCircle size={18} aria-hidden="true" />
+              Contact seller
+            </button>
+          </div>
+        </article>
+      </section>
     </main>
   );
 }

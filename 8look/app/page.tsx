@@ -21,6 +21,7 @@ import { FormEvent, useEffect, useLayoutEffect, useMemo, useRef, useState } from
 import { getCurrentUser, type User } from '@/lib/auth';
 import Dropdown, { DropdownItem } from './components/Dropdown';
 import { useRouter } from 'next/navigation';
+import styles from './home.module.css';
 
 type Listing = {
   id: number;
@@ -73,7 +74,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [userImage, setUserImage] = useState('/default-user-avatar.ico');
+  const [userImage] = useState('/default-user-avatar.ico');
   const categoryNavRef = useRef<HTMLElement>(null);
   const categoryIndicatorRef = useRef<HTMLSpanElement>(null);
   const router = useRouter();
@@ -81,7 +82,7 @@ export default function Home() {
   useLayoutEffect(() => {
     const nav = categoryNavRef.current;
     const indicator = categoryIndicatorRef.current;
-    const activeButton = nav?.querySelector<HTMLButtonElement>('button.active');
+    const activeButton = nav?.querySelector<HTMLButtonElement>(`button.${styles.active}`);
 
     if (!indicator || !activeButton || !nav) return;
 
@@ -253,15 +254,15 @@ export default function Home() {
           </div>
         </div>
 
-        <nav className="category-nav" aria-label="Listing categories"
+        <nav className={styles.categoryNav} aria-label="Listing categories"
           ref={categoryNavRef}>
             <span
                 ref={categoryIndicatorRef}
-                className="category-indicator"
+                className={styles.categoryIndicator}
                 aria-hidden="true"
               />
           <button
-            className={selectedCategory === null ? 'active' : ''}
+            className={selectedCategory === null ? styles.active : ''}
             type="button"
             onClick={() => setSelectedCategory(null)}
           >
@@ -269,7 +270,7 @@ export default function Home() {
           </button>
           {categories.map(({ id, label, icon: Icon }) => (
             <button
-              className={selectedCategory === id ? 'active' : ''}
+              className={selectedCategory === id ? styles.active : ''}
               type="button"
               key={id}
               onClick={() => setSelectedCategory(id)}
@@ -281,34 +282,34 @@ export default function Home() {
         </nav>
       </header>
 
-      <section className="listing-section" aria-live="polite" aria-busy={loading}>
-        <div className="section-heading">
+      <section className={styles.listingSection} aria-live="polite" aria-busy={loading}>
+        <div className={styles.sectionHeading}>
           <div>
-            <p className="eyebrow">Marketplace</p>
+            <p className={styles.eyebrow}>Marketplace</p>
             <h1>{hasSearched ? 'Search results' : 'Fresh listings'}</h1>
           </div>
           {!loading && !error && <span>{visibleListings.length} listings</span>}
         </div>
 
         {error && (
-          <div className="status-message error" role="alert">
+          <div className={`${styles.statusMessage} ${styles.error}`} role="alert">
             <strong>We hit a snag.</strong>
             <span>{error}</span>
           </div>
         )}
 
-        <div className="category-results" key={selectedCategory ?? 'all'}>
+        <div className={styles.categoryResults} key={selectedCategory ?? 'all'}>
           {loading ? (
-            <div className="listing-grid" aria-label="Loading listings">
+            <div className={styles.listingGrid} aria-label="Loading listings">
               {Array.from({ length: 8 }, (_, index) => (
-                <div className="listing-card skeleton" key={index} />
+                <div className={`${styles.listingCard} ${styles.skeleton}`} key={index} />
               ))}
             </div>
           ) : visibleListings.length > 0 ? (
-            <div className="listing-grid category-transition">
+            <div className={`${styles.listingGrid} ${styles.categoryTransition}`}>
               {visibleListings.map((listing) => (
-                <article className="listing-card" key={listing.id}>
-                  <div className="listing-image-wrap">
+                <Link className={styles.listingCard} href={`/listing/${listing.id}`} key={listing.id}>
+                  <div className={styles.listingImageWrap}>
                     <img
                       src={safeImageUrl(listing.images)}
                       alt=""
@@ -320,16 +321,16 @@ export default function Home() {
                       }}
                     />
                   </div>
-                  <div className="listing-content">
+                  <div className={styles.listingContent}>
                     <h2>{listing.title || 'Untitled listing'}</h2>
-                    <p className="place"><MapPin size={16} aria-hidden="true" />{listing.place || 'Location not provided'}</p>
-                    <p className="price">{formatPrice(listing.price)}</p>
+                    <p className={styles.place}><MapPin size={16} aria-hidden="true" />{listing.place || 'Location not provided'}</p>
+                    <p className={styles.price}>{formatPrice(listing.price)}</p>
                   </div>
-                </article>
+                </Link>
               ))}
             </div>
           ) : !error ? (
-            <div className="status-message category-transition">
+            <div className={`${styles.statusMessage} ${styles.categoryTransition}`}>
               <strong>No listings found.</strong>
               <span>Try a broader search or choose another category.</span>
             </div>
