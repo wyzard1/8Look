@@ -125,6 +125,16 @@ public class Listing {
         this.category_id = category_id;
     }
 
+    public void increaseViewCount()
+    {
+        this.view_count = this.view_count == null ? 1 : this.view_count + 1;
+    }
+
+    public void IncreseViewCount()
+    {
+        increaseViewCount();
+    }
+
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
     }

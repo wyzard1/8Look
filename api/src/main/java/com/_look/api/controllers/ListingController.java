@@ -1,9 +1,9 @@
 package com._look.api.controllers;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.regex.Pattern;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -50,9 +50,10 @@ public class ListingController {
         return listingService.searchListings(query);
     }
 
-    @GetMapping("/{vendorId}")
-    public Optional<Listing> getListingByVendorId(@PathVariable Integer vendorId) {
-        
-        return listingService.getListingByVendorId(vendorId);
+    @GetMapping("/{listingId}")
+    public ResponseEntity<Listing> getListingById(@PathVariable Integer listingId) {
+        return listingService.getListingById(listingId)
+            .map(ResponseEntity::ok)
+            .orElseGet(() -> ResponseEntity.notFound().build());
     }
 }

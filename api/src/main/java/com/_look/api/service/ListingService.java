@@ -20,8 +20,12 @@ public class ListingService {
         this.listingRepository = listingRepository;
     }
 
-    public Optional<Listing> getListingByVendorId(Integer vendorId) {
-        return listingRepository.findById(vendorId);
+    public Optional<Listing> getListingById(Integer listingId) {
+        return listingRepository.findById(listingId)
+            .map(listing -> {
+                listing.increaseViewCount();
+                return listingRepository.save(listing);
+            });
     }
 
     public List<Listing> getAllListings() {

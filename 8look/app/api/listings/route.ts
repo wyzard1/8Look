@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getApiBaseUrl } from '../registration/route';
 
 const searchPattern = /^[a-zA-Z0-9 -]{3,20}$/;
 
@@ -23,15 +24,6 @@ function toPublicListing(value: unknown) {
       ? listing.images.filter((image): image is string => typeof image === 'string')
       : [],
   };
-}
-
-function getApiBaseUrl() {
-  const configuredUrl = process.env.SPRING_API_URL ?? process.env.API_BASE_URL;
-  if (configuredUrl) return configuredUrl.replace(/\/$/, '');
-
-  const host = process.env.API_HOST ?? 'localhost';
-  const port = process.env.API_PORT ?? '8080';
-  return `http://${host}:${port}`;
 }
 
 export async function POST() {

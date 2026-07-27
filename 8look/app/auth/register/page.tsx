@@ -3,21 +3,14 @@
 import Link from "next/link";
 import styles from "./reg.module.css";
 import type { FormEvent } from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import SiteHeader from "../../components/SiteHeader";
 
 
 
 export default function RegisterPage() {
     const [message, setMessage] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
-
-    useEffect(() => {
-      const storedTheme = localStorage.getItem('8look-theme');
-      const useDark = storedTheme
-        ? storedTheme === 'dark'
-        : window.matchMedia('(prefers-color-scheme: dark)').matches;
-      document.documentElement.dataset.theme = useDark ? 'dark' : 'light';
-    }, []);
 
     async function handleRegister(event: FormEvent<HTMLFormElement>) {
       event.preventDefault();
@@ -62,17 +55,10 @@ export default function RegisterPage() {
 
     return (
        <div className={styles.registerPage}>
-        <header className="site-header">
-          <div className="header-top">
-            <Link className="brand" href="/" aria-label="8look home">
-              <span>8</span>look
-            </Link>
-    
-           <div className={styles.loginLinkContainer}>
-              <Link className="login-link" href="/auth/logon">Log in</Link>
-            </div>
-          </div>
-        </header>
+        <SiteHeader
+          showAccountActions={false}
+          actions={<Link className="login-link" href="/auth/logon">Log in</Link>}
+        />
         <section className={styles.registerSection}>
           <h1>Register an account</h1>
           <div className={styles.infoContainer}>

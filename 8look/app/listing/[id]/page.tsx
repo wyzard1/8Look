@@ -2,118 +2,17 @@
 
 import {
   Heart,
-  Newspaper,
-  Moon,
   MapPin,
   MessageCircle,
-  Search,
-  Settings,
-  LogOut,
-  Sun,
 } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { getCurrentUser, type User } from '@/lib/auth';
-import Dropdown, { DropdownItem } from '../../components/Dropdown';
-import { useRouter } from 'next/navigation';
+import SiteHeader, { HeaderSearch } from '../../components/SiteHeader';
 import styles from './listing.module.css';
 
 export default function ProductPage() {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [userImage] = useState('/default-user-avatar.ico');
-  const router = useRouter();
-
-  useEffect(() => {
-    let ignore = false;
-
-    async function loadCurrentUser() {
-      const user = await getCurrentUser();
-      if (!ignore) setCurrentUser(user);
-    }
-
-    void loadCurrentUser();
-
-    return () => {
-      ignore = true;
-    };
-  }, []);
-
-  async function logOut() {
-    const response = await fetch('/api/logout', {
-      method: 'POST',
-    });
-
-    if (!response.ok) {
-      return;
-    }
-
-    setCurrentUser(null);
-    router.refresh();
-  }
-
-  function toggleTheme() {
-    const nextDarkMode = document.documentElement.dataset.theme !== 'dark';
-    document.documentElement.dataset.theme = nextDarkMode ? 'dark' : 'light';
-    localStorage.setItem('8look-theme', nextDarkMode ? 'dark' : 'light');
-  }
-
   return (
     <main>
-      <header className="site-header">
-        <div className="header-top">
-          <Link className="brand" href="/" aria-label="8look home">
-            <span>8</span>look
-          </Link>
-
-          <form className="search-form" role="search">
-            <Search aria-hidden="true" size={20} />
-            <input
-              aria-label="Search listings"
-              autoComplete="off"
-              maxLength={20}
-              placeholder="What are you looking for?"
-            />
-          </form>
-
-          <div className="account-actions">
-            <button className="theme-button" type="button" onClick={toggleTheme} aria-label="Toggle color theme" title="Toggle color theme">
-              <Sun className="sun-icon" size={20} />
-              <Moon className="moon-icon" size={20} />
-            </button>   
-            {currentUser ? (
-              <div className="profile-container">
-                <span className="login-link">{currentUser.username}</span>
-                <Dropdown
-                  trigger={(
-                    <button className="menu-button" type="button">
-                      <Image src={userImage} alt="" width={40} height={40} />
-                    </button>
-                  )}
-                >
-                  <DropdownItem>
-                    <Settings size={16} aria-hidden="true" />
-                    <Link href="/profile">Profile options</Link>
-                  </DropdownItem>
-                  <DropdownItem>
-                    <Newspaper size={16} aria-hidden="true" />
-                    <Link href="/profile">New listing</Link>
-                  </DropdownItem>
-                  <DropdownItem>
-                    <LogOut size={16} aria-hidden="true" />
-                    <button type="button" onClick={logOut}>Log out</button>
-                  </DropdownItem>
-                </Dropdown>
-              </div>
-            ) : (
-              <>
-                <Link className="login-link" href="/auth/logon">Log in</Link>
-                <Link className="register-link" href="/auth/register">Register</Link>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
+      <SiteHeader search={<HeaderSearch />} />
 
       <section className={styles.productPage}>
         <div className={styles.productGallery}>
@@ -132,6 +31,7 @@ export default function ProductPage() {
             </button>
           </div>
         </div>
+
 
         <article className={styles.productDetails}>
           <div>
@@ -153,22 +53,6 @@ export default function ProductPage() {
               Add the product description here. This area is ready for listing
               details such as condition, size, features, pickup options, and
               anything else a buyer should know before contacting the seller.
-                            Add the product description here. This area is ready for listing
-              details such as condition, size, features, pickup options, and
-              anything else a buyer should know before contacting the seller.
-                            Add the product description here. This area is ready for listing
-              details such as condition, size, features, pickup options, and
-              anything else a buyer should know before contacting the seller.
-                            Add the product description here. This area is ready for listing
-              details such as condition, size, features, pickup options, and
-              anything else a buyer should know before contacting the seller.
-                            Add the product description here. This area is ready for listing
-              details such as condition, size, features, pickup options, and
-              anything else a buyer should know before contacting the seller.              Add the product description here. This area is ready for listing
-              details such as condition, size, features, pickup options, and
-              anything else a buyer should know before contacting the seller.              Add the product description here. This area is ready for listing
-              details such as condition, size, features, pickup options, and
-              anything else a buyer should know before contacting the seller.
             </p>
           </div>
 
@@ -176,6 +60,9 @@ export default function ProductPage() {
             <button className={styles.contactButton} type="button">
               <MessageCircle size={18} aria-hidden="true" />
               Contact seller
+            </button>
+            <button className={styles.saveButton} type="button" aria-label="Save listing" title="Save listing">
+              <Heart size={18} aria-hidden="true" />
             </button>
           </div>
         </article>

@@ -6,21 +6,13 @@ import {
   Dumbbell,
   House,
   Laptop,
-  Newspaper,
   MapPin,
-  Moon,
-  Search,
-  Settings,
   Shirt,
-  LogOut,
-  Sun,
   Warehouse,
 } from 'lucide-react';
 import Link from 'next/link';
 import { FormEvent, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { getCurrentUser, type User } from '@/lib/auth';
-import Dropdown, { DropdownItem } from './components/Dropdown';
-import { useRouter } from 'next/navigation';
+import SiteHeader, { HeaderSearch } from './components/SiteHeader';
 import styles from './home.module.css';
 
 type Listing = {
@@ -73,11 +65,8 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [userImage] = useState('/default-user-avatar.ico');
   const categoryNavRef = useRef<HTMLElement>(null);
   const categoryIndicatorRef = useRef<HTMLSpanElement>(null);
-  const router = useRouter();
 
   useLayoutEffect(() => {
     const nav = categoryNavRef.current;
@@ -102,47 +91,10 @@ export default function Home() {
     return () => resizeObserver.disconnect();
   }, [selectedCategory]);
   useEffect(() => {
-    const storedTheme = localStorage.getItem('8look-theme');
-    const useDark = storedTheme
-      ? storedTheme === 'dark'
-      : window.matchMedia('(prefers-color-scheme: dark)').matches;
-    document.documentElement.dataset.theme = useDark ? 'dark' : 'light';
-  }, []);
-
-  useEffect(() => {
     const controller = new AbortController();
     void loadListings('', controller.signal);
     return () => controller.abort();
   }, []);
-
-  useEffect(() => {
-    let ignore = false;
-
-    async function loadCurrentUser() {
-      const user = await getCurrentUser();
-      if (!ignore) setCurrentUser(user);
-    }
-
-    void loadCurrentUser();
-
-    return () => {
-      ignore = true;
-    };
-  }, []);
-
-  async function logOut() {
-    const response = await fetch('/api/logout', {
-      method: 'POST',
-    });
-
-    if (!response.ok) {
-      setError('Log out failed. Please try again.');
-      return;
-    }
-
-    setCurrentUser(null);
-    router.refresh();
-  }
 
   async function loadListings(searchQuery: string, signal?: AbortSignal) {
     setLoading(true);
@@ -183,12 +135,6 @@ export default function Home() {
     void loadListings(cleanQuery);
   }
 
-  function toggleTheme() {
-    const nextDarkMode = document.documentElement.dataset.theme !== 'dark';
-    document.documentElement.dataset.theme = nextDarkMode ? 'dark' : 'light';
-    localStorage.setItem('8look-theme', nextDarkMode ? 'dark' : 'light');
-  }
-
   const visibleListings = useMemo(
     () => selectedCategory === null
       ? listings
@@ -198,14 +144,9 @@ export default function Home() {
 
   return (
     <main>
-      <header className="site-header">
-        <div className="header-top">
-          <Link className="brand" href="/" aria-label="8look home">
-            <span>8</span>look
-          </Link>
-
-          <form className="search-form" onSubmit={handleSearch} role="search">
-            <Search aria-hidden="true" size={20} />
+      <SiteHeader
+        search={(
+          <HeaderSearch onSubmit={handleSearch}>
             <input
               aria-label="Search listings"
               autoComplete="off"
@@ -214,45 +155,9 @@ export default function Home() {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
-          </form>
-
-          <div className="account-actions">
-            <button className="theme-button" type="button" onClick={toggleTheme} aria-label="Toggle color theme" title="Toggle color theme">
-              <Sun className="sun-icon" size={20} />
-              <Moon className="moon-icon" size={20} />
-            </button>   
-            {loading ? <div></div> : (currentUser ? (
-              <div className="profile-container">
-                <span className="login-link">{currentUser.username}</span>
-                <Dropdown
-                  trigger={(
-                    <button className="menu-button" type="button">
-                      <img src={userImage} alt="" />
-                    </button>
-                  )}
-                >
-                  <DropdownItem>
-                    <Settings size={16} aria-hidden="true" />
-                    <Link href="/profile">Profile options</Link>
-                  </DropdownItem>
-                  <DropdownItem>
-                    <Newspaper size={16} aria-hidden="true" />
-                    <Link href="/profile">New listing</Link>
-                  </DropdownItem>
-                  <DropdownItem>
-                    <LogOut size={16} aria-hidden="true" />
-                    <button type="button" onClick={logOut}>Log out</button>
-                  </DropdownItem>
-                </Dropdown>
-              </div>
-            ) : (
-              <>
-                <Link className="login-link" href="/auth/logon">Log in</Link>
-                <Link className="register-link" href="/auth/register">Register</Link>
-              </>
-            ))}
-          </div>
-        </div>
+          </HeaderSearch>
+        )}
+      >
 
         <nav className={styles.categoryNav} aria-label="Listing categories"
           ref={categoryNavRef}>
@@ -280,7 +185,7 @@ export default function Home() {
             </button>
           ))}
         </nav>
-      </header>
+      </SiteHeader>
 
       <section className={styles.listingSection} aria-live="polite" aria-busy={loading}>
         <div className={styles.sectionHeading}>
