@@ -98,7 +98,14 @@ public class Listing {
     }
 
     public List<String> getImages() {
+        if (image_urls == null) {
+            image_urls = new ArrayList<>();
+        }
         return image_urls;
+    }
+
+    public void addImageUrl(String imageUrl) {
+        getImages().add(imageUrl);
     }
 
     public void setTitle(String title) {

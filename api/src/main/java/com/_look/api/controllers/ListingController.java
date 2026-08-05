@@ -4,19 +4,14 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
 
 import com._look.api.entities.Listing;
 import com._look.api.service.ListingService;
 
 import jakarta.validation.constraints.Size;
-
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @RestController
@@ -31,19 +26,27 @@ public class ListingController {
         this.listingService = listingService;
     }
 
-    @PostMapping("/create")
-    public Listing createListing(@RequestBody Listing listing) {
-        return listingService.createListing(listing);
+    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Listing createListing(@RequestPart("listing") Listing listing,
+                                 @RequestPart(value = "files", required = false) List<MultipartFile> files)
+    {
+        if (files == null || files.isEmpty() || files.stream().allMatch(MultipartFile::isEmpty)) {
+            return listingService.createListing(listing);
+        }
+
+        return listingService.createListingWithImages(listing, files);
     }
 
     @GetMapping("/all")
-    public List<Listing> getAllListings() {
+    public List<Listing> getAllListings()
+    {
         // Logic to retrieve all listings
         return listingService.getAllListings();
     }
 
     @GetMapping("/search")
-    public List<Listing> searchListings(@RequestParam("query") @Size(max = 20, message = "Keyword must be 20 characters or less") String query) {
+    public List<Listing> searchListings(@RequestParam("query") @Size(max = 20, message = "Keyword must be 20 characters or less") String query)
+    {
         if (!SEARCH_PATTERN.matcher(query).matches()) {
             throw new IllegalArgumentException("Invalid search query");
         }
@@ -51,7 +54,8 @@ public class ListingController {
     }
 
     @GetMapping("/{listingId}")
-    public ResponseEntity<Listing> getListingById(@PathVariable Integer listingId) {
+    public ResponseEntity<Listing> getListingById(@PathVariable Integer listingId)
+    {
         return listingService.getListingById(listingId)
             .map(ResponseEntity::ok)
             .orElseGet(() -> ResponseEntity.notFound().build());
