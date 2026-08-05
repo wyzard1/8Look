@@ -3,22 +3,15 @@
 import Link from "next/link";
 import styles from "./logon.module.css";
 import type { FormEvent } from "react";
-import { useEffect, useReducer, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import SiteHeader from "../../components/SiteHeader";
 
 
 export default function LogOnPage() {
     const [message, setMessage] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const router = useRouter();
-
-    useEffect(() => {
-      const storedTheme = localStorage.getItem('8look-theme');
-      const useDark = storedTheme
-        ? storedTheme === 'dark'
-        : window.matchMedia('(prefers-color-scheme: dark)').matches;
-      document.documentElement.dataset.theme = useDark ? 'dark' : 'light';
-    }, []);
 
     async function handleLogOn(event: FormEvent<HTMLFormElement>) {
       event.preventDefault();
@@ -57,17 +50,10 @@ export default function LogOnPage() {
 
     return (
        <div className={styles.logOnPage}>
-        <header className="site-header">
-          <div className="header-top">
-            <Link className="brand" href="/" aria-label="8look home">
-              <span>8</span>look
-            </Link>
-
-           <div className={styles.registerLinkContainer}>
-              <Link className="register-link" href="/auth/register">Register</Link>
-            </div>
-          </div>
-        </header>
+        <SiteHeader
+          showAccountActions={false}
+          actions={<Link className="register-link" href="/auth/register">Register</Link>}
+        />
         <section className={styles.logOnSection}>
           <h1>Log in to 8look</h1>
           <div className={styles.infoContainer}>

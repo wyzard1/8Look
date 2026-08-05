@@ -6,21 +6,14 @@ import {
   Dumbbell,
   House,
   Laptop,
-  Newspaper,
   MapPin,
-  Moon,
-  Search,
-  Settings,
   Shirt,
-  LogOut,
-  Sun,
   Warehouse,
 } from 'lucide-react';
 import Link from 'next/link';
 import { FormEvent, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { getCurrentUser, type User } from '@/lib/auth';
-import Dropdown, { DropdownItem } from './components/Dropdown';
-import { useRouter } from 'next/navigation';
+import SiteHeader, { HeaderSearch } from './components/SiteHeader';
+import styles from './home.module.css';
 
 type Listing = {
   id: number;
@@ -57,7 +50,7 @@ function safeImageUrl(images?: string[] | null) {
   }
 }
 
-function formatPrice(price?: number | null) {
+export function formatPrice(price?: number | null) {
   if (typeof price !== 'number' || !Number.isFinite(price)) return 'Price on request';
   return new Intl.NumberFormat('en-GB', {
     style: 'currency',
@@ -72,16 +65,13 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [userImage, setUserImage] = useState('/default-user-avatar.ico');
   const categoryNavRef = useRef<HTMLElement>(null);
   const categoryIndicatorRef = useRef<HTMLSpanElement>(null);
-  const router = useRouter();
 
   useLayoutEffect(() => {
     const nav = categoryNavRef.current;
     const indicator = categoryIndicatorRef.current;
-    const activeButton = nav?.querySelector<HTMLButtonElement>('button.active');
+    const activeButton = nav?.querySelector<HTMLButtonElement>(`button.${styles.active}`);
 
     if (!indicator || !activeButton || !nav) return;
 
@@ -89,11 +79,10 @@ export default function Home() {
       const navRect = nav.getBoundingClientRect();
       const buttonRect = activeButton.getBoundingClientRect();
       const left = buttonRect.left - navRect.left + nav.scrollLeft;
-
       indicator.style.width = `${buttonRect.width}px`;
       indicator.style.transform = `translate3d(${left}px, 0, 0)`;
     };
-
+ 
     positionIndicator();
     const resizeObserver = new ResizeObserver(positionIndicator);
     resizeObserver.observe(nav);
@@ -101,47 +90,10 @@ export default function Home() {
     return () => resizeObserver.disconnect();
   }, [selectedCategory]);
   useEffect(() => {
-    const storedTheme = localStorage.getItem('8look-theme');
-    const useDark = storedTheme
-      ? storedTheme === 'dark'
-      : window.matchMedia('(prefers-color-scheme: dark)').matches;
-    document.documentElement.dataset.theme = useDark ? 'dark' : 'light';
-  }, []);
-
-  useEffect(() => {
     const controller = new AbortController();
     void loadListings('', controller.signal);
     return () => controller.abort();
   }, []);
-
-  useEffect(() => {
-    let ignore = false;
-
-    async function loadCurrentUser() {
-      const user = await getCurrentUser();
-      if (!ignore) setCurrentUser(user);
-    }
-
-    void loadCurrentUser();
-
-    return () => {
-      ignore = true;
-    };
-  }, []);
-
-  async function logOut() {
-    const response = await fetch('/api/logout', {
-      method: 'POST',
-    });
-
-    if (!response.ok) {
-      setError('Log out failed. Please try again.');
-      return;
-    }
-
-    setCurrentUser(null);
-    router.refresh();
-  }
 
   async function loadListings(searchQuery: string, signal?: AbortSignal) {
     setLoading(true);
@@ -182,12 +134,6 @@ export default function Home() {
     void loadListings(cleanQuery);
   }
 
-  function toggleTheme() {
-    const nextDarkMode = document.documentElement.dataset.theme !== 'dark';
-    document.documentElement.dataset.theme = nextDarkMode ? 'dark' : 'light';
-    localStorage.setItem('8look-theme', nextDarkMode ? 'dark' : 'light');
-  }
-
   const visibleListings = useMemo(
     () => selectedCategory === null
       ? listings
@@ -197,14 +143,9 @@ export default function Home() {
 
   return (
     <main>
-      <header className="site-header">
-        <div className="header-top">
-          <Link className="brand" href="/" aria-label="8look home">
-            <span>8</span>look
-          </Link>
-
-          <form className="search-form" onSubmit={handleSearch} role="search">
-            <Search aria-hidden="true" size={20} />
+      <SiteHeader
+        search={(
+          <HeaderSearch onSubmit={handleSearch}>
             <input
               aria-label="Search listings"
               autoComplete="off"
@@ -213,55 +154,19 @@ export default function Home() {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
-          </form>
+          </HeaderSearch>
+        )}
+      >
 
-          <div className="account-actions">
-            <button className="theme-button" type="button" onClick={toggleTheme} aria-label="Toggle color theme" title="Toggle color theme">
-              <Sun className="sun-icon" size={20} />
-              <Moon className="moon-icon" size={20} />
-            </button>   
-            {loading ? <div></div> : (currentUser ? (
-              <div className="profile-container">
-                <span className="login-link">{currentUser.username}</span>
-                <Dropdown
-                  trigger={(
-                    <button className="menu-button" type="button">
-                      <img src={userImage} alt="" />
-                    </button>
-                  )}
-                >
-                  <DropdownItem>
-                    <Settings size={16} aria-hidden="true" />
-                    <Link href="/profile">Profile options</Link>
-                  </DropdownItem>
-                  <DropdownItem>
-                    <Newspaper size={16} aria-hidden="true" />
-                    <Link href="/profile">New listing</Link>
-                  </DropdownItem>
-                  <DropdownItem>
-                    <LogOut size={16} aria-hidden="true" />
-                    <button type="button" onClick={logOut}>Log out</button>
-                  </DropdownItem>
-                </Dropdown>
-              </div>
-            ) : (
-              <>
-                <Link className="login-link" href="/auth/logon">Log in</Link>
-                <Link className="register-link" href="/auth/register">Register</Link>
-              </>
-            ))}
-          </div>
-        </div>
-
-        <nav className="category-nav" aria-label="Listing categories"
+        <nav className={styles.categoryNav} aria-label="Listing categories"
           ref={categoryNavRef}>
             <span
                 ref={categoryIndicatorRef}
-                className="category-indicator"
+                className={styles.categoryIndicator}
                 aria-hidden="true"
               />
           <button
-            className={selectedCategory === null ? 'active' : ''}
+            className={selectedCategory === null ? styles.active : ''}
             type="button"
             onClick={() => setSelectedCategory(null)}
           >
@@ -269,7 +174,7 @@ export default function Home() {
           </button>
           {categories.map(({ id, label, icon: Icon }) => (
             <button
-              className={selectedCategory === id ? 'active' : ''}
+              className={selectedCategory === id ? styles.active : ''}
               type="button"
               key={id}
               onClick={() => setSelectedCategory(id)}
@@ -279,36 +184,36 @@ export default function Home() {
             </button>
           ))}
         </nav>
-      </header>
+      </SiteHeader>
 
-      <section className="listing-section" aria-live="polite" aria-busy={loading}>
-        <div className="section-heading">
+      <section className={styles.listingSection} aria-live="polite" aria-busy={loading}>
+        <div className={styles.sectionHeading}>
           <div>
-            <p className="eyebrow">Marketplace</p>
+            <p className={styles.eyebrow}>Marketplace</p>
             <h1>{hasSearched ? 'Search results' : 'Fresh listings'}</h1>
           </div>
           {!loading && !error && <span>{visibleListings.length} listings</span>}
         </div>
 
         {error && (
-          <div className="status-message error" role="alert">
+          <div className={`${styles.statusMessage} ${styles.error}`} role="alert">
             <strong>We hit a snag.</strong>
             <span>{error}</span>
           </div>
         )}
 
-        <div className="category-results" key={selectedCategory ?? 'all'}>
+        <div className={styles.categoryResults} key={selectedCategory ?? 'all'}>
           {loading ? (
-            <div className="listing-grid" aria-label="Loading listings">
+            <div className={styles.listingGrid} aria-label="Loading listings">
               {Array.from({ length: 8 }, (_, index) => (
-                <div className="listing-card skeleton" key={index} />
+                <div className={`${styles.listingCard} ${styles.skeleton}`} key={index} />
               ))}
             </div>
           ) : visibleListings.length > 0 ? (
-            <div className="listing-grid category-transition">
+            <div className={`${styles.listingGrid} ${styles.categoryTransition}`}>
               {visibleListings.map((listing) => (
-                <article className="listing-card" key={listing.id}>
-                  <div className="listing-image-wrap">
+                <Link className={styles.listingCard} href={`/listing/${listing.id}`} key={listing.id}>
+                  <div className={styles.listingImageWrap}>
                     <img
                       src={safeImageUrl(listing.images)}
                       alt=""
@@ -320,16 +225,16 @@ export default function Home() {
                       }}
                     />
                   </div>
-                  <div className="listing-content">
+                  <div className={styles.listingContent}>
                     <h2>{listing.title || 'Untitled listing'}</h2>
-                    <p className="place"><MapPin size={16} aria-hidden="true" />{listing.place || 'Location not provided'}</p>
-                    <p className="price">{formatPrice(listing.price)}</p>
+                    <p className={styles.place}><MapPin size={16} aria-hidden="true" />{listing.place || 'Location not provided'}</p>
+                    <p className={styles.price}>{formatPrice(listing.price)}</p>
                   </div>
-                </article>
+                </Link>
               ))}
             </div>
           ) : !error ? (
-            <div className="status-message category-transition">
+            <div className={`${styles.statusMessage} ${styles.categoryTransition}`}>
               <strong>No listings found.</strong>
               <span>Try a broader search or choose another category.</span>
             </div>

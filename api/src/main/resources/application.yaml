@@ -29,3 +29,9 @@ spring:
       cookie:
         name: authToken
         expires-in: 900
+  minio:
+    endpoint: ${MINIO_ENDPOINT}
+    access_key: ${MINIO_ROOT_USER}
+    secret_key: ${MINIO_ROOT_PASSWORD}
+    listing_bucket: ${MINIO_LISTING_BUCKET}
+    user_bucket: ${MINIO_LISTING_BUCKET}

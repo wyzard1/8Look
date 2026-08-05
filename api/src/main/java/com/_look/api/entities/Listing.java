@@ -98,7 +98,14 @@ public class Listing {
     }
 
     public List<String> getImages() {
+        if (image_urls == null) {
+            image_urls = new ArrayList<>();
+        }
         return image_urls;
+    }
+
+    public void addImageUrl(String imageUrl) {
+        getImages().add(imageUrl);
     }
 
     public void setTitle(String title) {
@@ -123,6 +130,16 @@ public class Listing {
 
     public void setCategoryId(Integer category_id) {
         this.category_id = category_id;
+    }
+
+    public void increaseViewCount()
+    {
+        this.view_count = this.view_count == null ? 1 : this.view_count + 1;
+    }
+
+    public void IncreseViewCount()
+    {
+        increaseViewCount();
     }
 
     public void setCreatedAt(Instant createdAt) {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-function getApiBaseUrl() {
+export function getApiBaseUrl() {
   const configuredUrl = process.env.SPRING_API_URL ?? process.env.API_BASE_URL;
   if (configuredUrl) return configuredUrl.replace(/\/$/, '');
 

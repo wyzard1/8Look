@@ -1,13 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-function getApiBaseUrl() {
-  const configuredUrl = process.env.SPRING_API_URL ?? process.env.API_BASE_URL;
-  if (configuredUrl) return configuredUrl.replace(/\/$/, '');
-
-  const host = process.env.API_HOST ?? 'localhost';
-  const port = process.env.API_PORT ?? '8080';
-  return `http://${host}:${port}`;
-}
+import { getApiBaseUrl } from '../registration/route';
 
 export async function POST(request: NextRequest) {
   try {

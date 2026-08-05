@@ -1,130 +1,160 @@
 'use client';
 
 import {
-  Newspaper,
-  Moon,
-  Search,
-  Settings,
-  LogOut,
-  Sun,
+  MapPin,
+  MessageCircle,
 } from 'lucide-react';
-import Link from 'next/link';
-import { FormEvent, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { getCurrentUser, type User } from '@/lib/auth';
-import Dropdown, { DropdownItem } from '../../components/Dropdown';
-import { useRouter } from 'next/navigation';
+import SiteHeader, { HeaderSearch } from '../../components/SiteHeader';
+import styles from './listing.module.css';
+import { useEffect, useMemo, useState } from 'react';
+import { useParams } from 'next/navigation';
+import type { ApiListing } from '@/app/api/listing/[id]/route';
+import { formatPrice } from '@/app/page';
 
+const fallbackImage = '/listing-placeholder.png';
 
-function formatPrice(price?: number | null) {
-  if (typeof price !== 'number' || !Number.isFinite(price)) return 'Price on request';
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'EUR',
-    maximumFractionDigits: 0,
-  }).format(price);
+function safeImageUrl(image?: string | null) {
+  if (!image) return fallbackImage;
+
+  try {
+    const url = new URL(image);
+    return url.protocol === 'http:' || url.protocol === 'https:'
+      ? url.toString()
+      : fallbackImage;
+  } catch {
+    return fallbackImage;
+  }
 }
 
-export default function Home() {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [userImage, setUserImage] = useState('/default-user-avatar.ico');
-  const [error, setError] = useState('');
-  const router = useRouter();
+export default function ProductPage() {
+  const [listing, setListing] = useState<ApiListing | null>(null);
+  const params = useParams();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
+  const imageUrls = useMemo(
+    () => listing?.images?.map(safeImageUrl).filter((image) => image !== fallbackImage) ?? [],
+    [listing],
+  );
+  const selectedImage = imageUrls[selectedImageIndex] ?? fallbackImage;
 
   useEffect(() => {
-    let ignore = false;
+    if (!id) return;
 
-    async function loadCurrentUser() {
-      const user = await getCurrentUser();
-      if (!ignore) setCurrentUser(user);
+    async function fetchListing()
+    {
+      try{
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch(`/api/listing/${id}`,
+              {
+                  cache: "no-store"
+              });
+      
+              if(!response.ok) throw new Error("Unable to fetch listing");
+      
+      const data: ApiListing = await response.json();
+      setListing(data);
+      setSelectedImageIndex(0);
+      }
+      catch{
+        setListing(null);
+        setError("Unable to fetch listing");
+      }
+      finally {
+        setLoading(false);
+      }
     }
 
-    void loadCurrentUser();
-
-    return () => {
-      ignore = true;
-    };
-  }, []);
-
-  async function logOut() {
-    const response = await fetch('/api/logout', {
-      method: 'POST',
-    });
-
-    if (!response.ok) {
-      setError('Log out failed. Please try again.');
-      return;
-    }
-
-    setCurrentUser(null);
-    router.refresh();
-  }
-
-
-  function toggleTheme() {
-    const nextDarkMode = document.documentElement.dataset.theme !== 'dark';
-    document.documentElement.dataset.theme = nextDarkMode ? 'dark' : 'light';
-    localStorage.setItem('8look-theme', nextDarkMode ? 'dark' : 'light');
-  }
+    fetchListing();
+  }, [id])
 
 
   return (
     <main>
-      <header className="site-header">
-        <div className="header-top">
-          <Link className="brand" href="/" aria-label="8look home">
-            <span>8</span>look
-          </Link>
+      <SiteHeader search={<HeaderSearch />} />
 
-          <form className="search-form" role="search">
-            <Search aria-hidden="true" size={20} />
-            <input
-              aria-label="Search listings"
-              autoComplete="off"
-              maxLength={20}
-              placeholder="What are you looking for?"
+      {loading ? (
+      <div>
+        <h1>Loading listing...</h1>
+      </div>
+      ) : error || !listing ?
+      (<div>
+        <h1>Product not available</h1>
+      </div>) :
+      (<section className={styles.productPage}>
+        <div className={styles.productGallery}>
+          <div className={styles.productImageWrap}>
+            <img
+              src={selectedImage}
+              alt=""
+              referrerPolicy="no-referrer"
+              onError={(event) => {
+                event.currentTarget.onerror = null;
+                event.currentTarget.src = fallbackImage;
+              }}
             />
-          </form>
-
-          <div className="account-actions">
-            <button className="theme-button" type="button" onClick={toggleTheme} aria-label="Toggle color theme" title="Toggle color theme">
-              <Sun className="sun-icon" size={20} />
-              <Moon className="moon-icon" size={20} />
-            </button>   
-            {currentUser ? (
-              <div className="profile-container">
-                <span className="login-link">{currentUser.username}</span>
-                <Dropdown
-                  trigger={(
-                    <button className="menu-button" type="button">
-                      <img src={userImage} alt="" />
-                    </button>
-                  )}
-                >
-                  <DropdownItem>
-                    <Settings size={16} aria-hidden="true" />
-                    <Link href="/profile">Profile options</Link>
-                  </DropdownItem>
-                  <DropdownItem>
-                    <Newspaper size={16} aria-hidden="true" />
-                    <Link href="/profile">New listing</Link>
-                  </DropdownItem>
-                  <DropdownItem>
-                    <LogOut size={16} aria-hidden="true" />
-                    <button type="button" onClick={logOut}>Log out</button>
-                  </DropdownItem>
-                </Dropdown>
-              </div>
-            ) : (
-              <>
-                <Link className="login-link" href="/auth/logon">Log in</Link>
-                <Link className="register-link" href="/auth/register">Register</Link>
-              </>
-            )}
           </div>
+          {imageUrls.length > 1 && (
+            <div className={styles.productThumbnails} aria-label="Listing photos">
+              {imageUrls.map((image, index) => (
+                <button
+                  className={index === selectedImageIndex ? styles.active : ''}
+                  type="button"
+                  key={`${image}-${index}`}
+                  onClick={() => setSelectedImageIndex(index)}
+                >
+                  <img
+                    src={image}
+                    alt=""
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                    onError={(event) => {
+                      event.currentTarget.onerror = null;
+                      event.currentTarget.src = fallbackImage;
+                    }}
+                  />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
-      </header>
-            <h1>TEMPLATE</h1>
+
+
+        <article className={styles.productDetails}>
+          <div>
+            <p className={styles.eyebrow}>Listing details</p>
+            <h1>{listing.title}</h1>
+            <p className={styles.productLocation}>
+              <MapPin size={18} aria-hidden="true" />
+              {listing.place ? (listing.place) : ("Location not provided")}
+            </p>
+          </div>
+
+          <p className={styles.productPrice}>
+            {formatPrice(listing.price)}
+          </p>
+
+          <p className={styles.viewCount}>{listing.viewCount ?? 0} views</p>
+
+          <div className={styles.productDescription}>
+            <h2>Description</h2>
+            <p>
+              {listing.description}
+            </p>
+          </div>
+
+          <div className={styles.productActions}>
+            <button className={styles.contactButton} type="button">
+              <MessageCircle size={18} aria-hidden="true" />
+              Contact seller
+            </button>
+          </div>
+        </article>
+      </section>)}
     </main>
   );
 }

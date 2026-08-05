@@ -1,6 +1,7 @@
 package com._look.api.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -37,5 +38,19 @@ class ListingServiceTest {
         assertEquals(1, results.size());
         assertSame(listing, results.get(0));
         verify(listingRepository).findById(42);
+    }
+
+    @Test
+    void getListingByIdShouldIncreaseViewCountWhenListingExists() {
+        Listing listing = new Listing(null, null, null, "Title", null, null, null, 4, null, null, List.of());
+        when(listingRepository.findById(42)).thenReturn(Optional.of(listing));
+        when(listingRepository.save(listing)).thenReturn(listing);
+
+        Optional<Listing> result = listingService.getListingById(42);
+
+        assertTrue(result.isPresent());
+        assertEquals(5, result.get().getViewCount());
+        verify(listingRepository).findById(42);
+        verify(listingRepository).save(listing);
     }
 }

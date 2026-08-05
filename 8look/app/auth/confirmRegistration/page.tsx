@@ -1,8 +1,9 @@
 'use client'
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import styles from "./confirm.module.css";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import SiteHeader from "../../components/SiteHeader";
 
 
 export default function RegisterConfirmPage()
@@ -12,14 +13,6 @@ export default function RegisterConfirmPage()
 
     const searchParams = useSearchParams();
     const token = searchParams.get("token") ?? ""
-
-    useEffect(() => {
-          const storedTheme = localStorage.getItem('8look-theme');
-          const useDark = storedTheme
-            ? storedTheme === 'dark'
-            : window.matchMedia('(prefers-color-scheme: dark)').matches;
-          document.documentElement.dataset.theme = useDark ? 'dark' : 'light';
-        }, []);
 
     async function confirmRegistration(token: string)
     {
@@ -41,17 +34,10 @@ export default function RegisterConfirmPage()
 
 
         <div className={styles.registerPage}>
-         <header className="site-header">
-          <div className="header-top">
-            <Link className="brand" href="/" aria-label="8look home">
-              <span>8</span>look
-            </Link>
-    
-           <div className={styles.loginLinkContainer}>
-              <Link className="login-link" href="/auth/login">Log in</Link>
-            </div>
-          </div>
-        </header>
+         <SiteHeader
+          showAccountActions={false}
+          actions={<Link className="login-link" href="/auth/logon">Log in</Link>}
+        />
         <div className = {styles.buttonContainer}>
           {(token === '' || token === null) ? <h1>Error: no confirmation token</h1>: 
           <><button className={styles.verifyButton} onClick={() => confirmRegistration(token)}>Verify Account</button><h1>{message}</h1></>}
