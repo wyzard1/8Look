@@ -1,58 +1,149 @@
 'use client';
 
 import {
-  Heart,
   MapPin,
   MessageCircle,
 } from 'lucide-react';
-import Image from 'next/image';
 import SiteHeader, { HeaderSearch } from '../../components/SiteHeader';
 import styles from './listing.module.css';
+import { useEffect, useMemo, useState } from 'react';
+import { useParams } from 'next/navigation';
+import type { ApiListing } from '@/app/api/listing/[id]/route';
+import { formatPrice } from '@/app/page';
+
+const fallbackImage = '/listing-placeholder.png';
+
+function safeImageUrl(image?: string | null) {
+  if (!image) return fallbackImage;
+
+  try {
+    const url = new URL(image);
+    return url.protocol === 'http:' || url.protocol === 'https:'
+      ? url.toString()
+      : fallbackImage;
+  } catch {
+    return fallbackImage;
+  }
+}
 
 export default function ProductPage() {
+  const [listing, setListing] = useState<ApiListing | null>(null);
+  const params = useParams();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+  const imageUrls = useMemo(
+    () => listing?.images?.map(safeImageUrl).filter((image) => image !== fallbackImage) ?? [],
+    [listing],
+  );
+  const selectedImage = imageUrls[selectedImageIndex] ?? fallbackImage;
+
+  useEffect(() => {
+    if (!id) return;
+
+    async function fetchListing()
+    {
+      try{
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch(`/api/listing/${id}`,
+              {
+                  cache: "no-store"
+              });
+      
+              if(!response.ok) throw new Error("Unable to fetch listing");
+      
+      const data: ApiListing = await response.json();
+      setListing(data);
+      setSelectedImageIndex(0);
+      }
+      catch{
+        setListing(null);
+        setError("Unable to fetch listing");
+      }
+      finally {
+        setLoading(false);
+      }
+    }
+
+    fetchListing();
+  }, [id])
+
+
   return (
     <main>
       <SiteHeader search={<HeaderSearch />} />
 
-      <section className={styles.productPage}>
+      {loading ? (
+      <div>
+        <h1>Loading listing...</h1>
+      </div>
+      ) : error || !listing ?
+      (<div>
+        <h1>Product not available</h1>
+      </div>) :
+      (<section className={styles.productPage}>
         <div className={styles.productGallery}>
           <div className={styles.productImageWrap}>
-            <Image src="/listing-placeholder.png" alt="" fill priority sizes="(max-width: 960px) 100vw, 60vw" />
+            <img
+              src={selectedImage}
+              alt=""
+              referrerPolicy="no-referrer"
+              onError={(event) => {
+                event.currentTarget.onerror = null;
+                event.currentTarget.src = fallbackImage;
+              }}
+            />
           </div>
-          <div className={styles.productThumbnails} aria-label="Listing photos">
-            <button className={styles.active} type="button">
-              <Image src="/listing-placeholder.png" alt="" fill sizes="33vw" />
-            </button>
-            <button type="button">
-              <Image src="/listing-placeholder.png" alt="" fill sizes="33vw" />
-            </button>
-            <button type="button">
-              <Image src="/listing-placeholder.png" alt="" fill sizes="33vw" />
-            </button>
-          </div>
+          {imageUrls.length > 1 && (
+            <div className={styles.productThumbnails} aria-label="Listing photos">
+              {imageUrls.map((image, index) => (
+                <button
+                  className={index === selectedImageIndex ? styles.active : ''}
+                  type="button"
+                  key={`${image}-${index}`}
+                  onClick={() => setSelectedImageIndex(index)}
+                >
+                  <img
+                    src={image}
+                    alt=""
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                    onError={(event) => {
+                      event.currentTarget.onerror = null;
+                      event.currentTarget.src = fallbackImage;
+                    }}
+                  />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
 
         <article className={styles.productDetails}>
           <div>
             <p className={styles.eyebrow}>Listing details</p>
-            <h1>Product title</h1>
+            <h1>{listing.title}</h1>
             <p className={styles.productLocation}>
               <MapPin size={18} aria-hidden="true" />
-              Location not provided
+              {listing.place ? (listing.place) : ("Location not provided")}
             </p>
           </div>
 
-          <p className={styles.productPrice}>Price on request</p>
+          <p className={styles.productPrice}>
+            {formatPrice(listing.price)}
+          </p>
 
-          <p className={styles.viewCount}>0 views</p>
+          <p className={styles.viewCount}>{listing.viewCount ?? 0} views</p>
 
           <div className={styles.productDescription}>
             <h2>Description</h2>
             <p>
-              Add the product description here. This area is ready for listing
-              details such as condition, size, features, pickup options, and
-              anything else a buyer should know before contacting the seller.
+              {listing.description}
             </p>
           </div>
 
@@ -61,12 +152,9 @@ export default function ProductPage() {
               <MessageCircle size={18} aria-hidden="true" />
               Contact seller
             </button>
-            <button className={styles.saveButton} type="button" aria-label="Save listing" title="Save listing">
-              <Heart size={18} aria-hidden="true" />
-            </button>
           </div>
         </article>
-      </section>
+      </section>)}
     </main>
   );
 }

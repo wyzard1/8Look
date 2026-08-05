@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getApiBaseUrl } from "../../registration/route";
 
-type ApiListing =
+export type ApiListing =
 {
     id: number;
     title: string;
@@ -17,14 +17,13 @@ type ApiListing =
 }
 
 export async function POST()
-{
+{        
     return NextResponse.json({ error: 'Method not allowed.' }, { status: 405 });
 }
 
 export async function GET(  request: NextRequest,
   context: { params: Promise<{ id: string }> })
 {
-    const apiBaseUrl = getApiBaseUrl();
     const { id } = await context.params;
 
     if (!/^\d+$/.test(id))  

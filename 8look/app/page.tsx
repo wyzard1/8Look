@@ -50,7 +50,7 @@ function safeImageUrl(images?: string[] | null) {
   }
 }
 
-function formatPrice(price?: number | null) {
+export function formatPrice(price?: number | null) {
   if (typeof price !== 'number' || !Number.isFinite(price)) return 'Price on request';
   return new Intl.NumberFormat('en-GB', {
     style: 'currency',
@@ -79,11 +79,10 @@ export default function Home() {
       const navRect = nav.getBoundingClientRect();
       const buttonRect = activeButton.getBoundingClientRect();
       const left = buttonRect.left - navRect.left + nav.scrollLeft;
-
       indicator.style.width = `${buttonRect.width}px`;
       indicator.style.transform = `translate3d(${left}px, 0, 0)`;
     };
-
+ 
     positionIndicator();
     const resizeObserver = new ResizeObserver(positionIndicator);
     resizeObserver.observe(nav);
