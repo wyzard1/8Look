@@ -2,6 +2,7 @@ package com._look.api.controllers;
 
 import com._look.api.DTO.UserDTO;
 import com._look.api.DTO.UserMeDTO;
+import com._look.api.entities.Listing;
 import com._look.api.entities.User;
 import com._look.api.entities.VerificationToken;
 import com._look.api.repositories.UserRepository;
@@ -15,19 +16,18 @@ import jakarta.validation.Valid;
 
 import org.apache.tomcat.util.http.SameSiteCookies;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Optional;
 
-import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @RestController
@@ -49,9 +49,23 @@ public class UserController {
     }
 
     @PostMapping({"/registration"})
-    public ResponseEntity<Void> register(@Valid @RequestBody UserDTO dto) {
+    public ResponseEntity<Void> register(@Valid @RequestBody UserDTO dto)
+    {
         service.registerNewUser(dto);
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @PostMapping(value = "/updateAvatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> updateAvatar(Authentication authentication,
+                                             @RequestPart(value = "file", required = true) MultipartFile file)
+    {
+        if (file == null || file.isEmpty())
+        {
+            return ResponseEntity.badRequest().build();
+        }
+
+        service.updateAvatar(authentication.getName(), file);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/registrationConfirm")

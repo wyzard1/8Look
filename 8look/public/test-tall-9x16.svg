@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1600" role="img" aria-labelledby="title desc">
+  <title id="title">Tall 9 by 16 test image</title>
+  <desc id="desc">A tall image used to test product gallery fitting.</desc>
+  <rect width="900" height="1600" fill="#f7f0ea"/>
+  <rect x="90" y="90" width="720" height="1420" rx="34" fill="#ffffff" stroke="#1f2937" stroke-width="12"/>
+  <rect x="280" y="300" width="340" height="780" rx="80" fill="#b45309"/>
+  <circle cx="450" cy="1190" r="105" fill="#1f2937"/>
+  <text x="450" y="220" fill="#1f2937" font-family="Arial, Helvetica, sans-serif" font-size="72" font-weight="700" text-anchor="middle">TALL 9:16</text>
+</svg>

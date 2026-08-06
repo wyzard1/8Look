@@ -27,6 +27,9 @@ public class ListingService {
     @Value("${spring.minio.endpoint}")
     private String minioEndpoint;
 
+    @Value("${spring.minio.public-endpoint}")
+    private String publicMinioEndpoint;
+
     @Value("${spring.minio.listing_bucket}")
     private String bucket;
 
@@ -121,6 +124,6 @@ public class ListingService {
     }
 
     private String buildImageAccessUrl(String location) {
-        return minioEndpoint.replaceAll("/+$", "") + "/" + bucket + "/" + location;
+        return publicMinioEndpoint.replaceAll("/+$", "") + "/" + bucket + "/" + location;
     }
 }

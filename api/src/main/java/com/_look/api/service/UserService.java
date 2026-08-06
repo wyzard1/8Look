@@ -8,21 +8,27 @@ import com._look.api.repositories.UserRepository;
 import com._look.api.repositories.VerificationTokenRepository;
 import com._look.api.validation.AuthenticationRequest;
 import com._look.api.validation.AuthenticationResponse;
+import io.minio.*;
+import io.minio.errors.ErrorResponseException;
 import jakarta.transaction.Transactional;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.text.Normalizer;
 import java.time.Instant;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 
@@ -35,6 +41,16 @@ public class UserService implements IUserService {
     private final PasswordEncoder passwordEncoder;
     private final VerificationTokenRepository tokenRepository;
     private final JwtService jwtService;
+
+    @Value("${spring.minio.endpoint}")
+    private String minioEndpoint;
+    @Value("${spring.minio.public-endpoint}")
+    private String publicMinioEndpoint;
+    @Value("${spring.minio.user_bucket}")
+    private String bucket;
+
+    @Autowired
+    private MinioClient minioClient;
 
     private final JavaMailSender mailSender;
     private final AuthenticationManager authenticationManager;
@@ -134,6 +150,35 @@ public class UserService implements IUserService {
         mailSender.send(email);
     }
 
+    public void updateAvatar(String name, MultipartFile file)
+    {
+        User user = repository.findByUsername(name).orElseThrow(() -> new UsernameNotFoundException(name));
+
+        try {
+
+            String oldLocation = extractObjectLocation(user.getAvatar_url());
+            String filename = sanitizeFilename(file.getOriginalFilename());
+            String location = user.getId() + "/" + UUID.randomUUID() + "-" + filename;
+
+            PutObjectArgs args = PutObjectArgs.builder().bucket(bucket).object(location)
+                    .stream(file.getInputStream(), file.getSize(), (long) -1).contentType(file.getContentType())
+                    .build();
+            minioClient.putObject(args);
+            user.setAvatar_url(buildImageAccessUrl(location));
+
+            if(oldLocation != null && objectExists(oldLocation)){
+                minioClient.removeObject(RemoveObjectArgs.builder()
+                        .bucket(bucket).object(oldLocation).build());
+            }
+        }
+        catch (Exception e)
+        {
+            throw new IllegalStateException("Could not upload user avatar", e);
+        }
+
+        repository.save(user);
+    }
+
     public void deleteToken(VerificationToken t){
         tokenRepository.delete(t);
     }
@@ -144,6 +189,72 @@ public class UserService implements IUserService {
     
     private boolean usernameExists(String username) {
         return repository.findByUsername(username).isPresent();
+    }
+
+    private String extractObjectLocation(String avatarUrl)
+    {
+        if(avatarUrl == null || avatarUrl.isBlank())
+        {
+            return null;
+        }
+
+        String prefix = publicMinioEndpoint.replaceAll("/+$", "") + "/" + bucket + "/";
+
+        if(!avatarUrl.startsWith(prefix))
+        {
+            String internalPrefix = minioEndpoint.replaceAll("/+$", "") + "/" + bucket + "/";
+            if(!avatarUrl.startsWith(internalPrefix))
+            {
+                return null;
+            }
+            return avatarUrl.substring(internalPrefix.length());
+        }
+
+        return avatarUrl.substring(prefix.length());
+    }
+
+    private boolean objectExists(String location) throws Exception
+    {
+        try
+        {
+            minioClient.statObject(StatObjectArgs.builder()
+                    .bucket(bucket).object(location).build());
+            return true;
+        }
+        catch (ErrorResponseException e)
+        {
+            if ("NoSuchKey".equals(e.errorResponse().code())) {
+                return false;
+            }
+            throw e;
+        }
+    }
+
+    private String buildImageAccessUrl(String location)
+    {
+        return publicMinioEndpoint.replaceAll("/+$", "") + "/" + bucket + "/" + location;
+    }
+
+    private String sanitizeFilename(String originalFilename)
+    {
+        if (originalFilename == null || originalFilename.isBlank()) {
+            return "file";
+        }
+
+        String filename = originalFilename.replace("\\", "/");
+        int lastSlashIndex = filename.lastIndexOf("/");
+        if (lastSlashIndex >= 0) {
+            filename = filename.substring(lastSlashIndex + 1);
+        }
+
+        filename = Normalizer.normalize(filename, Normalizer.Form.NFKD)
+                .replaceAll("\\p{M}", "")
+                .toLowerCase(Locale.ROOT)
+                .replaceAll("[^a-z0-9._-]", "-")
+                .replaceAll("-{2,}", "-")
+                .replaceAll("^[._-]+|[._-]+$", "");
+
+        return filename.isBlank() ? "file" : filename;
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request)

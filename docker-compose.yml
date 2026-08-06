@@ -56,6 +56,8 @@ services:
       - API_URL=http://${API_HOST}:${API_PORT}
       - DB_HOST=db
       - DB_PORT=${DB_PORT}
+      - MINIO_INTERNAL_ENDPOINT=http://minio:9000
+      - MINIO_PUBLIC_ENDPOINT=${MINIO_ENDPOINT}
     depends_on:
       db:
         condition: service_healthy
