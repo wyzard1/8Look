@@ -1,1 +1,21 @@
 .env
+.DS_Store
+
+# Dependencies
+node_modules/
+
+# Next.js build output
+.next/
+app/.next/
+8look/.next/
+out/
+
+# Gradle build output
+.gradle/
+build/
+api/.gradle/
+api/build/
+
+# IDE files
+.idea/
+.vscode/
