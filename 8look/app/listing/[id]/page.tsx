@@ -9,24 +9,28 @@ import styles from './listing.module.css';
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 import type { ApiListing } from '@/app/api/listing/[id]/route';
-import { formatPrice } from '@/app/page';
+import { formatPrice } from '@/lib/format';
 
 const fallbackImage = '/listing-placeholder.png';
 
-function safeImageUrl(image?: string | null) {
+function safeImageUrl(image?: string | null) 
+{
   if (!image) return fallbackImage;
 
-  try {
+  try 
+  {
     const url = new URL(image);
     return url.protocol === 'http:' || url.protocol === 'https:'
       ? url.toString()
       : fallbackImage;
-  } catch {
+  } catch 
+  {
     return fallbackImage;
   }
 }
 
-export default function ProductPage() {
+export default function ProductPage() 
+{
   const [listing, setListing] = useState<ApiListing | null>(null);
   const params = useParams();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;

@@ -1,3 +1,4 @@
+import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { getApiBaseUrl } from '../registration/route';
 
@@ -11,6 +12,20 @@ type ApiListing = {
   place?: unknown;
   images?: unknown;
 };
+
+type ApiUser = {
+  id?: unknown;
+};
+
+function getBearerToken(request: NextRequest, cookieToken?: string) {
+  const authHeader = request.headers.get('authorization');
+
+  if (authHeader?.startsWith('Bearer ')) {
+    return authHeader.substring(7);
+  }
+
+  return cookieToken;
+}
 
 function toPublicListing(value: unknown) {
   const listing = value as ApiListing;
@@ -26,8 +41,96 @@ function toPublicListing(value: unknown) {
   };
 }
 
-export async function POST() {
-  return NextResponse.json({ error: 'Method not allowed.' }, { status: 405 });
+export async function POST(request: NextRequest) {
+  try {
+    const cookieStore = await cookies();
+    const token = getBearerToken(request, cookieStore.get('authToken')?.value);
+
+    if (!token) {
+      return NextResponse.json({ error: 'You must be logged in to create a listing.' }, { status: 401 });
+    }
+
+    const apiBaseUrl = getApiBaseUrl();
+    const userResponse = await fetch(`${apiBaseUrl}/me`, {
+      cache: 'no-store',
+      headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
+      signal: AbortSignal.timeout(8000),
+    });
+
+    if (!userResponse.ok) {
+      return NextResponse.json({ error: 'You must be logged in to create a listing.' }, { status: 401 });
+    }
+
+    const user = await userResponse.json().catch(() => null) as ApiUser | null;
+    const sellerId = Number(user?.id);
+
+    if (!Number.isInteger(sellerId)) {
+      return NextResponse.json({ error: 'Unable to identify the current user.' }, { status: 401 });
+    }
+
+    const incomingFormData = await request.formData();
+    const title = String(incomingFormData.get('title') ?? '').trim();
+    const description = String(incomingFormData.get('description') ?? '').trim();
+    const place = String(incomingFormData.get('place') ?? '').trim();
+    const categoryId = Number(incomingFormData.get('categoryId'));
+    const rawPrice = String(incomingFormData.get('price') ?? '').trim();
+    const price = rawPrice ? Number(rawPrice) : null;
+
+    if (!title || !Number.isInteger(categoryId)) {
+      return NextResponse.json({ error: 'Title and category are required.' }, { status: 400 });
+    }
+
+    if (price !== null && (!Number.isFinite(price) || price < 0)) {
+      return NextResponse.json({ error: 'Enter a valid price.' }, { status: 400 });
+    }
+
+    const formData = new FormData();
+    formData.append(
+      'listing',
+      new Blob([
+        JSON.stringify({
+          sellerId,
+          categoryId,
+          title,
+          description,
+          price,
+          place,
+        }),
+      ], { type: 'application/json' }),
+    );
+
+    for (const file of incomingFormData.getAll('files')) {
+      if (file instanceof File && file.size > 0) {
+        formData.append('files', file, file.name);
+      }
+    }
+
+    const response = await fetch(`${apiBaseUrl}/listings/create`, {
+      method: 'POST',
+      headers: { Accept: 'application/json' },
+      body: formData,
+      signal: AbortSignal.timeout(30000),
+    });
+
+    const data = await response.json().catch(() => null);
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: 'Listing could not be created.' },
+        { status: response.status },
+      );
+    }
+
+    return NextResponse.json(toPublicListing(data), {
+      status: 201,
+      headers: {
+        'Cache-Control': 'no-store',
+        'X-Content-Type-Options': 'nosniff',
+      },
+    });
+  } catch (error) {
+    console.error('Listing creation proxy failed:', error);
+    return NextResponse.json({ error: 'Listing service unavailable.' }, { status: 502 });
+  }
 }
 
 export async function GET(request: NextRequest) {

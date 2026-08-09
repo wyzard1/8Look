@@ -8,6 +8,8 @@ import { type FormEventHandler, type ReactNode, useEffect, useState } from 'reac
 import { getCurrentUser, type User } from '@/lib/auth';
 import Dropdown, { DropdownItem } from './Dropdown';
 
+const defaultAvatarUrl = "/default-user-avatar.png";
+
 type SiteHeaderProps = {
   search?: ReactNode;
   children?: ReactNode;
@@ -23,7 +25,12 @@ export default function SiteHeader({
 }: SiteHeaderProps) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoadingUser, setIsLoadingUser] = useState(showAccountActions);
+  const [failedAvatarUrl, setFailedAvatarUrl] = useState<string | null>(null);
   const router = useRouter();
+  const avatarUrl = currentUser?.avatarUrl && currentUser.avatarUrl !== failedAvatarUrl
+    ? currentUser.avatarUrl
+    : defaultAvatarUrl;
+
 
   useEffect(() => {
     const storedTheme = localStorage.getItem('8look-theme');
@@ -93,7 +100,18 @@ export default function SiteHeader({
                 <Dropdown
                   trigger={(
                     <button className="menu-button" type="button">
-                      <Image src="/default-user-avatar.ico" alt="" width={40} height={40} />
+                      <Image
+                        src={avatarUrl}
+                        alt=""
+                        width={40}
+                        height={40}
+                        unoptimized
+                        onError={() => {
+                          if (avatarUrl !== defaultAvatarUrl) {
+                            setFailedAvatarUrl(avatarUrl);
+                          }
+                        }}
+                      />
                     </button>
                   )}
                 >
@@ -103,7 +121,7 @@ export default function SiteHeader({
                   </DropdownItem>
                   <DropdownItem>
                     <Newspaper size={16} aria-hidden="true" />
-                    <Link href="/profile">New listing</Link>
+                    <Link href="/listing/create">New listing</Link>
                   </DropdownItem>
                   <DropdownItem>
                     <LogOut size={16} aria-hidden="true" />

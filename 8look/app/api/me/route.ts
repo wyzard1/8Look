@@ -9,6 +9,7 @@ type ApiUser =
     email: string;
     username: string;
     avatar_url?: string;
+    avatarUrl?: string;
     last_login: Date | null;
 }
 
@@ -51,7 +52,10 @@ export async function GET(request: NextRequest)
     
             const userData: ApiUser = await response.json();
 
-        return NextResponse.json(userData, 
+        return NextResponse.json({
+            ...userData,
+            avatarUrl: userData.avatarUrl ?? userData.avatar_url ?? null,
+        },
             {headers: {
         "Cache-Control": "no-store",
         "X-Content-Type-Options": "nosniff",

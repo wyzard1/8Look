@@ -14,6 +14,7 @@ import Link from 'next/link';
 import { FormEvent, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import SiteHeader, { HeaderSearch } from './components/SiteHeader';
 import styles from './home.module.css';
+import { formatPrice } from '@/lib/format';
 
 type Listing = {
   id: number;
@@ -48,15 +49,6 @@ function safeImageUrl(images?: string[] | null) {
   } catch {
     return fallbackImage;
   }
-}
-
-export function formatPrice(price?: number | null) {
-  if (typeof price !== 'number' || !Number.isFinite(price)) return 'Price on request';
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'EUR',
-    maximumFractionDigits: 0,
-  }).format(price);
 }
 
 export default function Home() {
