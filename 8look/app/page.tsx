@@ -6,6 +6,7 @@ import {
   Dumbbell,
   House,
   Laptop,
+  ListFilter,
   MapPin,
   Shirt,
   Warehouse,
@@ -36,6 +37,7 @@ const categories = [
 ] as const;
 
 const fallbackImage = '/listing-placeholder.png';
+type PriceSort = 'newest' | 'price-asc' | 'price-desc';
 
 function safeImageUrl(images?: string[] | null) {
   const candidate = images?.[0];
@@ -55,6 +57,10 @@ export default function Home() {
   const [query, setQuery] = useState('');
   const [listings, setListings] = useState<Listing[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [locationFilter, setLocationFilter] = useState('');
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [priceSort, setPriceSort] = useState<PriceSort>('newest');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const categoryNavRef = useRef<HTMLElement>(null);
@@ -126,12 +132,50 @@ export default function Home() {
     void loadListings(cleanQuery);
   }
 
-  const visibleListings = useMemo(
-    () => selectedCategory === null
-      ? listings
-      : listings.filter((listing) => listing.categoryId === selectedCategory),
-    [listings, selectedCategory],
-  );
+  const visibleListings = useMemo(() => {
+    const cleanLocation = locationFilter.trim().toLowerCase();
+    const minimumPrice = minPrice.trim() === '' ? null : Number(minPrice);
+    const maximumPrice = maxPrice.trim() === '' ? null : Number(maxPrice);
+
+    const filteredListings = listings.filter((listing) => {
+      if (selectedCategory !== null && listing.categoryId !== selectedCategory) return false;
+
+      if (cleanLocation && !listing.place?.toLowerCase().includes(cleanLocation)) return false;
+
+      if (minimumPrice !== null || maximumPrice !== null) {
+        if (typeof listing.price !== 'number' || !Number.isFinite(listing.price)) return false;
+        if (minimumPrice !== null && Number.isFinite(minimumPrice) && listing.price < minimumPrice) return false;
+        if (maximumPrice !== null && Number.isFinite(maximumPrice) && listing.price > maximumPrice) return false;
+      }
+
+      return true;
+    });
+
+    if (priceSort === 'newest') return filteredListings;
+
+    return [...filteredListings].sort((firstListing, secondListing) => {
+      const firstHasPrice = typeof firstListing.price === 'number' && Number.isFinite(firstListing.price);
+      const secondHasPrice = typeof secondListing.price === 'number' && Number.isFinite(secondListing.price);
+
+      if (!firstHasPrice && !secondHasPrice) return 0;
+      if (!firstHasPrice) return 1;
+      if (!secondHasPrice) return -1;
+
+      const firstPrice = firstListing.price ?? 0;
+      const secondPrice = secondListing.price ?? 0;
+
+      return priceSort === 'price-asc'
+        ? firstPrice - secondPrice
+        : secondPrice - firstPrice;
+    });
+  }, [listings, locationFilter, maxPrice, minPrice, priceSort, selectedCategory]);
+
+  function clearFilters() {
+    setLocationFilter('');
+    setMinPrice('');
+    setMaxPrice('');
+    setPriceSort('newest');
+  }
 
   return (
     <main>
@@ -185,6 +229,60 @@ export default function Home() {
             <h1>{hasSearched ? 'Search results' : 'Fresh listings'}</h1>
           </div>
           {!loading && !error && <span>{visibleListings.length} listings</span>}
+        </div>
+
+        <div className={styles.filterBar} aria-label="Listing filters">
+          <div className={styles.filterTitle}>
+            <ListFilter size={18} aria-hidden="true" />
+            <span>Filters</span>
+          </div>
+
+          <label className={styles.filterField}>
+            <span>Location</span>
+            <input
+              autoComplete="off"
+              value={locationFilter}
+              onChange={(event) => setLocationFilter(event.target.value)}
+              placeholder="Any place"
+            />
+          </label>
+
+          <label className={styles.filterField}>
+            <span>Min price</span>
+            <input
+              inputMode="decimal"
+              min="0"
+              type="number"
+              value={minPrice}
+              onChange={(event) => setMinPrice(event.target.value)}
+              placeholder="0"
+            />
+          </label>
+
+          <label className={styles.filterField}>
+            <span>Max price</span>
+            <input
+              inputMode="decimal"
+              min="0"
+              type="number"
+              value={maxPrice}
+              onChange={(event) => setMaxPrice(event.target.value)}
+              placeholder="No limit"
+            />
+          </label>
+
+          <label className={styles.filterField}>
+            <span>Sort</span>
+            <select value={priceSort} onChange={(event) => setPriceSort(event.target.value as PriceSort)}>
+              <option value="newest">Newest</option>
+              <option value="price-asc">Price: low to high</option>
+              <option value="price-desc">Price: high to low</option>
+            </select>
+          </label>
+
+          <button className={styles.clearFilters} type="button" onClick={clearFilters}>
+            Reset
+          </button>
         </div>
 
         {error && (

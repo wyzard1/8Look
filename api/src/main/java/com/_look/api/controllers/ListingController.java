@@ -40,7 +40,6 @@ public class ListingController {
     @GetMapping("/all")
     public List<Listing> getAllListings()
     {
-        // Logic to retrieve all listings
         return listingService.getAllListings();
     }
 

@@ -83,6 +83,85 @@
   font-size: 14px;
 }
 
+.filterBar {
+  display: grid;
+  grid-template-columns: auto minmax(170px, 1.1fr) minmax(120px, 0.6fr) minmax(120px, 0.6fr) minmax(170px, 0.8fr) auto;
+  align-items: end;
+  gap: 12px;
+  margin: -4px 0 24px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 1px 2px rgba(25, 33, 38, 0.03);
+}
+
+.filterTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  color: var(--foreground);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.filterTitle svg {
+  color: var(--secondary);
+}
+
+.filterField {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filterField span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.filterField input,
+.filterField select {
+  width: 100%;
+  min-width: 0;
+  height: 42px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0 12px;
+  background: var(--surface-soft);
+  color: var(--foreground);
+  font: inherit;
+}
+
+.filterField input::placeholder {
+  color: var(--muted);
+}
+
+.filterField input:focus,
+.filterField select:focus {
+  border-color: var(--secondary);
+  outline: 0;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--secondary) 16%, transparent);
+}
+
+.clearFilters {
+  min-height: 42px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0 14px;
+  background: var(--surface);
+  color: var(--foreground);
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.clearFilters:hover {
+  background: var(--surface-soft);
+}
+
 .listingGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -244,6 +323,15 @@
 }
 
 @media (max-width: 960px) {
+  .filterBar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .filterTitle,
+  .clearFilters {
+    justify-content: center;
+  }
+
   .listingGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -261,6 +349,18 @@
 
   .listingSection {
     padding-top: 30px;
+  }
+
+  .filterBar {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 12px;
+  }
+
+  .filterTitle {
+    justify-content: flex-start;
+    min-height: 28px;
   }
 
   .sectionHeading h1 {
