@@ -1,6 +1,7 @@
 package com._look.api.DTO;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotEmpty;
 
 import java.time.Instant;
@@ -18,6 +19,9 @@ public class UserMeDTO {
     private long id;
 
     private Instant last_login;
+
+    @JsonProperty("is_verified")
+    private Boolean is_verified;
 
     public String getUsername() {
         return username;
@@ -58,5 +62,13 @@ public class UserMeDTO {
 
     public void setLast_login(Instant last_login) {
         this.last_login = last_login;
+    }
+
+    public Boolean getIs_verified() {
+        return is_verified;
+    }
+
+    public void setIs_verified(Boolean is_verified) {
+        this.is_verified = is_verified;
     }
 }

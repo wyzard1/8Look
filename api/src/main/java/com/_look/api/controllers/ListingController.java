@@ -2,12 +2,15 @@ package com._look.api.controllers;
 
 import java.util.List;
 import java.util.regex.Pattern;
+import java.time.Instant;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import com._look.api.entities.Listing;
+import com._look.api.entities.User;
+import com._look.api.repositories.UserRepository;
 import com._look.api.service.ListingService;
 
 import jakarta.validation.constraints.Size;
@@ -21,9 +24,11 @@ public class ListingController {
     private static final Pattern SEARCH_PATTERN = Pattern.compile("^[a-zA-Z0-9 \\-]{3,50}$");
 
     private final ListingService listingService;
+    private final UserRepository userRepository;
 
-    public ListingController(ListingService listingService) {
+    public ListingController(ListingService listingService, UserRepository userRepository) {
         this.listingService = listingService;
+        this.userRepository = userRepository;
     }
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -53,10 +58,66 @@ public class ListingController {
     }
 
     @GetMapping("/{listingId}")
-    public ResponseEntity<Listing> getListingById(@PathVariable Integer listingId)
+    public ResponseEntity<ListingDetailsResponse> getListingById(@PathVariable Integer listingId)
     {
         return listingService.getListingById(listingId)
-            .map(ResponseEntity::ok)
+            .map(this::toListingDetailsResponse)
             .orElseGet(() -> ResponseEntity.notFound().build());
     }
+
+    private ResponseEntity<ListingDetailsResponse> toListingDetailsResponse(Listing listing) {
+        SellerResponse seller = null;
+
+        if (listing.getSellerId() != null) {
+            seller = userRepository.findById(listing.getSellerId().longValue())
+                .map(this::toSellerResponse)
+                .orElse(null);
+        }
+
+        return ResponseEntity.ok(new ListingDetailsResponse(
+            listing.getId(),
+            listing.getTitle(),
+            listing.getDescription(),
+            listing.getPrice(),
+            listing.getPlace(),
+            listing.getCreatedAt(),
+            listing.getUpdatedAt(),
+            listing.getCategoryId(),
+            listing.getImages(),
+            listing.getSellerId(),
+            listing.getViewCount(),
+            seller
+        ));
+    }
+
+    private SellerResponse toSellerResponse(User user) {
+        return new SellerResponse(
+            user.getId(),
+            user.getUsername(),
+            user.getAvatar_url(),
+            user.getLast_login()
+        );
+    }
+
+    public record ListingDetailsResponse(
+        Integer id,
+        String title,
+        String description,
+        Double price,
+        String place,
+        Instant createdAt,
+        Instant updatedAt,
+        Integer categoryId,
+        List<String> images,
+        Integer sellerId,
+        Integer viewCount,
+        SellerResponse seller
+    ) {}
+
+    public record SellerResponse(
+        Long id,
+        String username,
+        String avatarUrl,
+        Instant lastLogin
+    ) {}
 }

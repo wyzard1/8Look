@@ -1,0 +1,353 @@
+.accountPage {
+  width: min(100% - 48px, 1080px);
+  margin: 0 auto;
+  padding: 42px 0 64px;
+}
+
+.pageHeading {
+  margin-bottom: 24px;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: var(--secondary);
+  font-size: 12px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.pageHeading h1 {
+  margin: 0 0 8px;
+  font-size: 34px;
+  line-height: 1.15;
+  letter-spacing: 0;
+}
+
+.pageHeading span {
+  display: block;
+  max-width: 640px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.settingsLayout {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.36fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 22px;
+}
+
+.profilePanel,
+.settingsCard {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 1px 2px rgba(25, 33, 38, 0.03);
+}
+
+.profilePanel {
+  position: sticky;
+  top: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 24px;
+  text-align: center;
+}
+
+.avatarWrap {
+  position: relative;
+  width: 112px;
+  height: 112px;
+}
+
+.avatarWrap img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--surface-soft);
+}
+
+.avatarWrap button {
+  position: absolute;
+  right: 0;
+  bottom: 2px;
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--foreground);
+  cursor: pointer;
+}
+
+.avatarWrap button:hover {
+  background: var(--surface-soft);
+}
+
+.avatarWrap button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.avatarInput {
+  display: none;
+}
+
+.profileCopy h2 {
+  margin: 0 0 8px;
+  font-size: 20px;
+  line-height: 1.25;
+  letter-spacing: 0;
+}
+
+.profileCopy p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.statusList {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 6px;
+}
+
+.statusList div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 38px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0 12px;
+  background: var(--surface-soft);
+  color: var(--foreground);
+  font-size: 14px;
+  font-weight: 750;
+  text-align: left;
+}
+
+.statusList svg {
+  color: var(--secondary);
+  flex: 0 0 auto;
+}
+
+.settingsStack {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.settingsCard {
+  padding: 24px;
+}
+
+.cardHeading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 20px;
+}
+
+.cardHeading h2 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.cardHeading svg {
+  flex: 0 0 auto;
+  color: var(--secondary);
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field span {
+  color: var(--foreground);
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.field input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-soft);
+  color: var(--foreground);
+  font: inherit;
+}
+
+.field input {
+  height: 46px;
+  padding: 0 13px;
+}
+
+.field input::placeholder {
+  color: var(--muted);
+}
+
+.field input:focus {
+  border-color: var(--secondary);
+  outline: 0;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--secondary) 16%, transparent);
+}
+
+.wideField {
+  grid-column: 1 / -1;
+}
+
+.inputWithIcon {
+  display: flex;
+  align-items: center;
+  height: 46px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-soft);
+  color: var(--secondary);
+}
+
+.inputWithIcon:focus-within {
+  border-color: var(--secondary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--secondary) 16%, transparent);
+}
+
+.inputWithIcon svg {
+  flex: 0 0 auto;
+  margin-left: 13px;
+}
+
+.inputWithIcon input {
+  height: 100%;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.inputWithIcon input:focus {
+  box-shadow: none;
+}
+
+.formActions {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.saveButton,
+.deleteButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  border-radius: 6px;
+  padding: 0 18px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.saveButton {
+  min-width: 150px;
+  border: 0;
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.saveButton:hover {
+  background: var(--accent-hover);
+}
+
+.deleteButton {
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface));
+  color: var(--accent);
+}
+
+.deleteButton:hover {
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+}
+
+@media (max-width: 860px) {
+  .settingsLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .profilePanel {
+    position: static;
+    align-items: start;
+    text-align: left;
+  }
+
+  .profilePanel {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .statusList {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 680px) {
+  .accountPage {
+    width: min(100% - 28px, 1080px);
+    padding-top: 26px;
+  }
+
+  .pageHeading h1 {
+    font-size: 28px;
+  }
+
+  .profilePanel,
+  .settingsCard {
+    padding: 18px;
+  }
+
+  .profilePanel,
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .avatarWrap {
+    margin: 0 auto;
+  }
+
+  .profileCopy {
+    text-align: center;
+  }
+
+  .formActions {
+    flex-direction: column-reverse;
+  }
+
+  .saveButton,
+  .deleteButton {
+    width: 100%;
+  }
+}

@@ -48,6 +48,14 @@ public class ListingService {
             });
     }
 
+    public void deleteAllUserListings(long sellerId)
+    {
+        for(Listing l : listingRepository.findAllBySellerId(Math.toIntExact(sellerId)))
+        {
+            listingRepository.delete(l);
+        }
+    }
+
     public List<Listing> getAllListings() {
         return listingRepository.findAll();
     }

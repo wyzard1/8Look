@@ -11,9 +11,13 @@ type ApiUser =
     avatar_url?: string;
     avatarUrl?: string;
     last_login: Date | null;
+    is_verified?: boolean;
+    isVerified?: boolean;
+    verified?: boolean;
+    enabled?: boolean;
 }
 
-function getBearerToken(request: NextRequest, cookieToken?: string) {
+export function getBearerToken(request: NextRequest, cookieToken?: string) {
     const authHeader = request.headers.get("authorization");
 
     if (authHeader?.startsWith("Bearer ")) {
@@ -55,6 +59,11 @@ export async function GET(request: NextRequest)
         return NextResponse.json({
             ...userData,
             avatarUrl: userData.avatarUrl ?? userData.avatar_url ?? null,
+            is_verified: userData.is_verified
+                ?? userData.isVerified
+                ?? userData.verified
+                ?? userData.enabled
+                ?? false,
         },
             {headers: {
         "Cache-Control": "no-store",

@@ -1,19 +1,47 @@
 'use client';
 
 import {
+  Clock3,
   MapPin,
   MessageCircle,
+  UserRound,
 } from 'lucide-react';
-import SiteHeader, { HeaderSearch } from '../../components/SiteHeader';
+import SiteHeader, { defaultAvatarUrl, HeaderSearch } from '../../components/SiteHeader';
 import styles from './listing.module.css';
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 import type { ApiListing } from '@/app/api/listing/[id]/route';
-import { formatPrice } from '@/lib/format';
+import { formatPrice, formatRelativeTime } from '@/lib/format';
 
 const fallbackImage = '/listing-placeholder.png';
 
-function safeImageUrl(image?: string | null) 
+export function formatLastLogin(lastLogin?: string | null) {
+  if (!lastLogin) return 'Last seen unknown';
+
+  const lastLoginTime = new Date(lastLogin).getTime();
+  if (!Number.isFinite(lastLoginTime)) return 'Last seen unknown';
+
+  const secondsAgo = Math.max(0, Math.floor((Date.now() - lastLoginTime) / 1000));
+
+  if (secondsAgo < 60) return 'Last seen just now';
+
+  const minutesAgo = Math.floor(secondsAgo / 60);
+  if (minutesAgo < 60) return `Last seen ${minutesAgo} ${minutesAgo === 1 ? 'minute' : 'minutes'} ago`;
+
+  const hoursAgo = Math.floor(minutesAgo / 60);
+  if (hoursAgo < 24) return `Last seen ${hoursAgo} ${hoursAgo === 1 ? 'hour' : 'hours'} ago`;
+
+  const daysAgo = Math.floor(hoursAgo / 24);
+  if (daysAgo < 30) return `Last seen ${daysAgo} ${daysAgo === 1 ? 'day' : 'days'} ago`;
+
+  const monthsAgo = Math.floor(daysAgo / 30);
+  if (monthsAgo < 12) return `Last seen ${monthsAgo} ${monthsAgo === 1 ? 'month' : 'months'} ago`;
+
+  const yearsAgo = Math.floor(daysAgo / 365);
+  return `Last seen ${yearsAgo} ${yearsAgo === 1 ? 'year' : 'years'} ago`;
+}
+
+export function safeImageUrl(image?: string | null) 
 {
   if (!image) return fallbackImage;
 
@@ -129,12 +157,40 @@ export default function ProductPage()
 
 
         <article className={styles.productDetails}>
+          <section className={styles.sellerCard} aria-label="Seller information">
+            <img
+              src={listing.seller?.avatarUrl || defaultAvatarUrl}
+              alt=""
+              loading="lazy"
+              referrerPolicy="no-referrer"
+              onError={(event) => {
+                event.currentTarget.onerror = null;
+                event.currentTarget.src = defaultAvatarUrl;
+              }}
+            />
+            <div className={styles.sellerInfo}>
+              <p className={styles.eyebrow}>Seller</p>
+              <h2>
+                <UserRound size={18} aria-hidden="true" />
+                {listing.seller?.username || 'Unknown seller'}
+              </h2>
+              <span>
+                <Clock3 size={16} aria-hidden="true" />
+                {formatLastLogin(listing.seller?.lastLogin)}
+              </span>
+            </div>
+          </section>
+
           <div>
             <p className={styles.eyebrow}>Listing details</p>
             <h1>{listing.title}</h1>
             <p className={styles.productLocation}>
               <MapPin size={18} aria-hidden="true" />
               {listing.place ? (listing.place) : ("Location not provided")}
+            </p>
+            <p className={styles.productUpdatedAt}>
+              <Clock3 size={18} aria-hidden="true" />
+              {formatRelativeTime(listing.updatedAt)}
             </p>
           </div>
 

@@ -4,12 +4,14 @@ import styles from "./confirm.module.css";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import SiteHeader from "../../components/SiteHeader";
+import { useAuth } from "@/lib/auth";
 
 
 export default function RegisterConfirmPage()
 {
 
     const [message, setMessage] = useState('')
+    const { refreshUser } = useAuth();
 
     const searchParams = useSearchParams();
     const token = searchParams.get("token") ?? ""
@@ -25,6 +27,7 @@ export default function RegisterConfirmPage()
             setMessage(response.status === 408 ? 'Request expired!' : 'Invalid request');
             return;
         }
+        await refreshUser();
         setMessage("Account verified!")
         }
         catch{}

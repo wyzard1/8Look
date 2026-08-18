@@ -131,4 +131,7 @@ public class User implements UserDetails {
     }
 
 
+    public Boolean getIs_verified() {
+        return is_verified;
+    }
 }

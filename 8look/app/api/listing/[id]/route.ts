@@ -8,12 +8,18 @@ export type ApiListing =
     description: string;
     price: number;
     place: string;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: string | null;
+    updatedAt: string | null;
     categoryId: number;
     images: string[];
     sellerId: number;
     viewCount: number;
+    seller?: {
+        id: number;
+        username: string;
+        avatarUrl: string | null;
+        lastLogin: string | null;
+    } | null;
 }
 
 export async function POST()

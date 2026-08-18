@@ -3,6 +3,7 @@
 import {
   BriefcaseBusiness,
   CarFront,
+  Clock3,
   Dumbbell,
   House,
   Laptop,
@@ -15,7 +16,7 @@ import Link from 'next/link';
 import { FormEvent, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import SiteHeader, { HeaderSearch } from './components/SiteHeader';
 import styles from './home.module.css';
-import { formatPrice } from '@/lib/format';
+import { formatPrice, formatRelativeTime } from '@/lib/format';
 
 type Listing = {
   id: number;
@@ -23,6 +24,7 @@ type Listing = {
   title: string;
   price?: number | null;
   place?: string | null;
+  updatedAt?: string | null;
   images?: string[] | null;
 };
 
@@ -318,6 +320,7 @@ export default function Home() {
                   <div className={styles.listingContent}>
                     <h2>{listing.title || 'Untitled listing'}</h2>
                     <p className={styles.place}><MapPin size={16} aria-hidden="true" />{listing.place || 'Location not provided'}</p>
+                    <p className={styles.updatedAt}><Clock3 size={16} aria-hidden="true" />{formatRelativeTime(listing.updatedAt)}</p>
                     <p className={styles.price}>{formatPrice(listing.price)}</p>
                   </div>
                 </Link>

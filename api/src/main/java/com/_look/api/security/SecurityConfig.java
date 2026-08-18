@@ -3,6 +3,7 @@ package com._look.api.security;
 import com._look.api.repositories.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -36,7 +37,8 @@ public class SecurityConfig {
                         .requestMatchers("/auth/user").hasAuthority("USER")
                         .requestMatchers("/auth/admin").hasAuthority("ADMIN")
                         .requestMatchers("/registrationConfirm").permitAll()
-                        .requestMatchers("/listings/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/listings/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/listings/create").authenticated()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

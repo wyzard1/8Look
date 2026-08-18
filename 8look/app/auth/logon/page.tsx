@@ -6,12 +6,14 @@ import type { FormEvent } from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import SiteHeader from "../../components/SiteHeader";
+import { useAuth } from "@/lib/auth";
 
 
 export default function LogOnPage() {
     const [message, setMessage] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const router = useRouter();
+    const { refreshUser } = useAuth();
 
     async function handleLogOn(event: FormEvent<HTMLFormElement>) {
       event.preventDefault();
@@ -39,6 +41,7 @@ export default function LogOnPage() {
         form.reset();
         setMessage('Logged in successfully.');
 
+        await refreshUser();
         router.push('/');
       } catch (error) {
         console.error('Log in request failed:', error);

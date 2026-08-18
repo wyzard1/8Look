@@ -39,6 +39,7 @@ public class UserService implements IUserService {
 
     private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
+    private final ListingService listings;
     private final VerificationTokenRepository tokenRepository;
     private final JwtService jwtService;
 
@@ -55,10 +56,11 @@ public class UserService implements IUserService {
     private final JavaMailSender mailSender;
     private final AuthenticationManager authenticationManager;
 
-    public UserService(UserRepository repository, PasswordEncoder passwordEncoder,
+    public UserService(UserRepository repository, PasswordEncoder passwordEncoder, ListingService listings,
                        VerificationTokenRepository tokenRepository, JwtService jwtService, JavaMailSender mailSender, MessageSource messages, AuthenticationManager authenticationManager) {
         this.repository = repository;
         this.passwordEncoder = passwordEncoder;
+        this.listings = listings;
         this.tokenRepository = tokenRepository;
         this.mailSender = mailSender;
         this.jwtService = jwtService;
@@ -115,15 +117,19 @@ public class UserService implements IUserService {
         List<VerificationToken> l = tokenRepository.findByExpiryDateLessThan(now);
         for(VerificationToken v : l)
         {
-         if(v.getUser().isEnabled() == false);
-         {
-            repository.delete(v.getUser());
-         }
+            if (v.getUser().isEnabled() == false) {
+                repository.delete(v.getUser());
+            }
         }
         tokenRepository.deleteByExpiryDateLessThan(now);
 
     }
 
+    public void deleteUser(User user)
+    {
+        listings.deleteAllUserListings(user.getId());
+        repository.delete(user);
+    }
 
     @Override
     public VerificationToken getVerificationToken(String token) {

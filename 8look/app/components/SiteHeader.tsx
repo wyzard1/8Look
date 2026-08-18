@@ -5,10 +5,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { type FormEventHandler, type ReactNode, useEffect, useState } from 'react';
-import { getCurrentUser, type User } from '@/lib/auth';
+import { useAuth } from '@/lib/auth';
 import Dropdown, { DropdownItem } from './Dropdown';
 
-const defaultAvatarUrl = "/default-user-avatar.png";
+export const defaultAvatarUrl = "/default-user-avatar.png";
 
 type SiteHeaderProps = {
   search?: ReactNode;
@@ -23,13 +23,14 @@ export default function SiteHeader({
   actions,
   showAccountActions = true,
 }: SiteHeaderProps) {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isLoadingUser, setIsLoadingUser] = useState(showAccountActions);
+
+  const { user: currentUser, isLoadingUser, refreshUser } = useAuth();
   const [failedAvatarUrl, setFailedAvatarUrl] = useState<string | null>(null);
   const router = useRouter();
   const avatarUrl = currentUser?.avatarUrl && currentUser.avatarUrl !== failedAvatarUrl
     ? currentUser.avatarUrl
     : defaultAvatarUrl;
+  const hasSearch = Boolean(search);
 
 
   useEffect(() => {
@@ -40,26 +41,6 @@ export default function SiteHeader({
     document.documentElement.dataset.theme = useDark ? 'dark' : 'light';
   }, []);
 
-  useEffect(() => {
-    if (!showAccountActions) return;
-
-    let ignore = false;
-
-    async function loadCurrentUser() {
-      const user = await getCurrentUser();
-      if (!ignore) {
-        setCurrentUser(user);
-        setIsLoadingUser(false);
-      }
-    }
-
-    void loadCurrentUser();
-
-    return () => {
-      ignore = true;
-    };
-  }, [showAccountActions]);
-
   async function logOut() {
     const response = await fetch('/api/logout', {
       method: 'POST',
@@ -67,7 +48,7 @@ export default function SiteHeader({
 
     if (!response.ok) return;
 
-    setCurrentUser(null);
+    await refreshUser();
     router.refresh();
   }
 
@@ -79,12 +60,12 @@ export default function SiteHeader({
 
   return (
     <header className="site-header">
-      <div className="header-top">
+      <div className={`header-top ${hasSearch ? '' : 'header-top--no-search'}`}>
         <Link className="brand" href="/" aria-label="8look home">
           <span>8</span>look
         </Link>
 
-        {search ?? <div />}
+        {search}
 
         <div className="account-actions">
           {showAccountActions && (
@@ -117,7 +98,7 @@ export default function SiteHeader({
                 >
                   <DropdownItem>
                     <Settings size={16} aria-hidden="true" />
-                    <Link href="/profile">Profile options</Link>
+                    <Link href="/account">Profile options</Link>
                   </DropdownItem>
                   <DropdownItem>
                     <Newspaper size={16} aria-hidden="true" />

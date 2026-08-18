@@ -78,6 +78,14 @@ input:focus-visible {
   margin: 0 auto;
 }
 
+.header-top--no-search {
+  grid-template-columns: auto minmax(280px, 680px) auto;
+}
+
+.header-top--no-search .account-actions {
+  grid-column: 3;
+}
+
 .brand {
   color: var(--foreground);
   font-size: 28px;
@@ -238,6 +246,14 @@ input:focus-visible {
     grid-template-columns: auto 1fr;
     gap: 16px;
     padding: 14px 0;
+  }
+
+  .header-top--no-search {
+    grid-template-columns: auto auto;
+  }
+
+  .header-top--no-search .account-actions {
+    grid-column: auto;
   }
 
   .search-form {

@@ -255,7 +255,7 @@
   min-width: 0;
   align-items: center;
   gap: 5px;
-  margin: 0 0 16px;
+  margin: 0 0 8px;
   overflow: hidden;
   color: var(--muted);
   font-size: 14px;
@@ -263,9 +263,23 @@
   white-space: nowrap;
 }
 
-.place svg {
+.place svg,
+.updatedAt svg {
   flex: 0 0 auto;
   color: var(--secondary);
+}
+
+.updatedAt {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 5px;
+  margin: 0 0 16px;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .price {
@@ -382,6 +396,11 @@
   }
 
   .place {
+    margin-bottom: 7px;
+    font-size: 12px;
+  }
+
+  .updatedAt {
     margin-bottom: 12px;
     font-size: 12px;
   }

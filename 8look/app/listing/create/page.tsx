@@ -137,7 +137,7 @@ export default function CreateListingPage() {
 
   return (
     <main>
-      <SiteHeader search={<HeaderSearch />} />
+      <SiteHeader />
 
       {isCheckingUser ? (
         <section className={styles.createPage}>

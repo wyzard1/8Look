@@ -10,6 +10,7 @@ type ApiListing = {
   title?: unknown;
   price?: unknown;
   place?: unknown;
+  updatedAt?: unknown;
   images?: unknown;
 };
 
@@ -17,7 +18,7 @@ type ApiUser = {
   id?: unknown;
 };
 
-function getBearerToken(request: NextRequest, cookieToken?: string) {
+export function getBearerToken(request: NextRequest, cookieToken?: string) {
   const authHeader = request.headers.get('authorization');
 
   if (authHeader?.startsWith('Bearer ')) {
@@ -35,6 +36,7 @@ function toPublicListing(value: unknown) {
     title: typeof listing.title === 'string' ? listing.title : '',
     price: typeof listing.price === 'number' ? listing.price : null,
     place: typeof listing.place === 'string' ? listing.place : null,
+    updatedAt: typeof listing.updatedAt === 'string' ? listing.updatedAt : null,
     images: Array.isArray(listing.images)
       ? listing.images.filter((image): image is string => typeof image === 'string')
       : [],

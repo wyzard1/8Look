@@ -68,6 +68,23 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
+    @DeleteMapping("/deleteUser")
+    public ResponseEntity<Void> deleteUser(Authentication authentication) {
+
+        Optional<User> u = userRepository.findByUsername(authentication.getName());
+        System.out.println(authentication.getName());
+        if(u.isEmpty())
+        {
+            return ResponseEntity.notFound().build();
+        }
+        User user = u.get();
+
+        service.deleteUser(user);
+
+
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/registrationConfirm")
     public ResponseEntity<Void> registrationConfirm(@RequestParam("token") String token)
     {
@@ -111,6 +128,7 @@ public class UserController {
         dto.setUsername(user.getUsername());
         dto.setAvatarUrl(user.getAvatar_url());
         dto.setLast_login(user.getLast_login());
+        dto.setIs_verified(user.getIs_verified());
 
 
         userRepository.save(user);
