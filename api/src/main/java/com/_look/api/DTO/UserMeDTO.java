@@ -1,6 +1,7 @@
 package com._look.api.DTO;
 
 
+import com._look.api.entities.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotEmpty;
 
@@ -8,6 +9,20 @@ import java.time.Instant;
 
 
 public class UserMeDTO {
+
+    public UserMeDTO()
+    {
+    }
+
+    public UserMeDTO(User u)
+    {
+        this.id = u.getId();
+        this.email = u.getEmail();
+        this.avatar_url = u.getAvatar_url();
+        this.username = u.getUsername();
+        this.is_verified = u.getIs_verified();
+        this.last_login = u.getLast_login();
+    }
 
     @NotEmpty
     private String username;
@@ -46,7 +61,6 @@ public class UserMeDTO {
     public void setAvatarUrl(String avatar_url) {
         this.avatar_url = avatar_url;
     }
-
 
     public long getId() {
         return id;

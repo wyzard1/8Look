@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getApiBaseUrl } from "../registration/route";
 
 
-type ApiUser =
+export type ApiUser =
 {
     id: number;
     email: string;

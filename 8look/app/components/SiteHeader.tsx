@@ -1,6 +1,6 @@
 'use client';
 
-import { LogOut, Moon, Newspaper, Search, Settings, Sun } from 'lucide-react';
+import { LayoutList, LogOut, Moon, Newspaper, Search, Settings, Sun } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -103,6 +103,10 @@ export default function SiteHeader({
                   <DropdownItem>
                     <Newspaper size={16} aria-hidden="true" />
                     <Link href="/listing/create">New listing</Link>
+                  </DropdownItem>
+                  <DropdownItem>
+                    <LayoutList size={16} aria-hidden="true" />
+                    <Link href={`/listing/user/${currentUser.id}`}>My Listings</Link>
                   </DropdownItem>
                   <DropdownItem>
                     <LogOut size={16} aria-hidden="true" />

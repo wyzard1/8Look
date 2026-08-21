@@ -92,6 +92,15 @@
   background: var(--surface-soft);
 }
 
+.formActions button:hover {
+  background: var(--accent-hover);
+}
+
+.formActions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
 .avatarWrap button:disabled {
   cursor: wait;
   opacity: 0.65;
@@ -218,6 +227,15 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--secondary) 16%, transparent);
 }
 
+.field input[aria-invalid='true'] {
+  border-color: var(--accent);
+}
+
+.field input[aria-invalid='true']:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
 .wideField {
   grid-column: 1 / -1;
 }
@@ -251,6 +269,40 @@
 
 .inputWithIcon input:focus {
   box-shadow: none;
+}
+
+.inputWithIcon:has(input[aria-invalid='true']) {
+  border-color: var(--accent);
+}
+
+.inputWithIcon:has(input[aria-invalid='true']:focus) {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.fieldError {
+  color: var(--accent) !important;
+  font-size: 13px !important;
+  font-weight: 750 !important;
+  line-height: 1.35;
+}
+
+.errorMessage,
+.successMessage {
+  border-radius: 6px;
+  padding: 12px 14px;
+  font-weight: 750;
+}
+
+.errorMessage {
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  background: color-mix(in srgb, var(--accent) 9%, var(--surface));
+  color: var(--accent);
+}
+
+.successMessage {
+  border: 1px solid color-mix(in srgb, var(--secondary) 45%, var(--border));
+  background: color-mix(in srgb, var(--secondary) 9%, var(--surface));
+  color: var(--secondary);
 }
 
 .formActions {

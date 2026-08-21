@@ -2,7 +2,7 @@ package com._look.api.controllers;
 
 import com._look.api.DTO.UserDTO;
 import com._look.api.DTO.UserMeDTO;
-import com._look.api.entities.Listing;
+import com._look.api.DTO.UserUpdateDTO;
 import com._look.api.entities.User;
 import com._look.api.entities.VerificationToken;
 import com._look.api.repositories.UserRepository;
@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.util.Calendar;
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -55,6 +54,26 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    @PatchMapping({"/updateUser"})
+    public ResponseEntity<UserMeDTO> updateUser(@Valid @RequestBody UserUpdateDTO dto, Authentication authentication)
+    {
+
+        User authenticatedUser = getAuthenticatedUser(authentication);
+        if(authenticatedUser == null)
+        {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        UserMeDTO updatedUser = service.updateUser(authenticatedUser.getId(), dto);
+
+        if(updatedUser == null)
+        {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        return ResponseEntity.ok(updatedUser);
+    }
+
     @PostMapping(value = "/updateAvatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> updateAvatar(Authentication authentication,
                                              @RequestPart(value = "file", required = true) MultipartFile file)
@@ -64,22 +83,26 @@ public class UserController {
             return ResponseEntity.badRequest().build();
         }
 
-        service.updateAvatar(authentication.getName(), file);
+        User authenticatedUser = getAuthenticatedUser(authentication);
+        if(authenticatedUser == null)
+        {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        service.updateAvatar(authenticatedUser.getId(), file);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/deleteUser")
     public ResponseEntity<Void> deleteUser(Authentication authentication) {
 
-        Optional<User> u = userRepository.findByUsername(authentication.getName());
-        System.out.println(authentication.getName());
-        if(u.isEmpty())
+        User authenticatedUser = getAuthenticatedUser(authentication);
+        if(authenticatedUser == null)
         {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        User user = u.get();
 
-        service.deleteUser(user);
+        service.deleteUser(authenticatedUser.getId());
 
 
         return ResponseEntity.ok().build();
@@ -113,8 +136,13 @@ public class UserController {
     @GetMapping("/me")
     public ResponseEntity<UserMeDTO> fetchUser(Authentication authentication) {
 
-        Optional<User> u = userRepository.findByUsername(authentication.getName());
-        System.out.println(authentication.getName());
+        User authenticatedUser = getAuthenticatedUser(authentication);
+        if(authenticatedUser == null)
+        {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Optional<User> u = userRepository.findById(authenticatedUser.getId());
         if(u.isEmpty())
         {
             return ResponseEntity.notFound().build();
@@ -161,6 +189,16 @@ public class UserController {
     @ExceptionHandler(UserAlreadyExistException.class)
     public ResponseEntity<Void> handleUserAlreadyExists() {
         return ResponseEntity.status(HttpStatus.CONFLICT).build();
+    }
+
+    private User getAuthenticatedUser(Authentication authentication)
+    {
+        if(authentication == null || !(authentication.getPrincipal() instanceof User user))
+        {
+            return null;
+        }
+
+        return user;
     }
 
 }

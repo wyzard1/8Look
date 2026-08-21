@@ -1,6 +1,8 @@
 package com._look.api.service;
 
 import com._look.api.DTO.UserDTO;
+import com._look.api.DTO.UserMeDTO;
+import com._look.api.DTO.UserUpdateDTO;
 import com._look.api.entities.Role;
 import com._look.api.entities.User;
 import com._look.api.entities.VerificationToken;
@@ -15,7 +17,6 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
-import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -29,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.text.Normalizer;
 import java.time.Instant;
 import java.util.*;
+import java.util.function.Consumer;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 
@@ -125,8 +127,9 @@ public class UserService implements IUserService {
 
     }
 
-    public void deleteUser(User user)
+    public void deleteUser(Long userId)
     {
+        User user = repository.findById(userId).orElseThrow(() -> new UsernameNotFoundException("User not found"));
         listings.deleteAllUserListings(user.getId());
         repository.delete(user);
     }
@@ -134,6 +137,25 @@ public class UserService implements IUserService {
     @Override
     public VerificationToken getVerificationToken(String token) {
         return tokenRepository.findByToken(token);
+    }
+
+
+    public UserMeDTO updateUser(Long id, UserUpdateDTO dto){
+        User user = repository.findById(id).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        if((!passwordEncoder.matches(dto.getCurrent_password(), user.getPassword())) || dto.getCurrent_password() == null || dto.getCurrent_password().isBlank())
+        {
+            return null;
+        }
+
+        updateIfPresent(dto.getUsername(), user::setUsername);
+        updateIfPresent(dto.getEmail(), user::setEmail);
+        updateIfPresent(dto.getPassword(), password -> user.setPassword(passwordEncoder.encode(password)));
+        updateIfPresent(dto.getPhone_number(), user::setPhone_number);
+
+        user.setUpdated_at(Instant.now());
+
+        return new UserMeDTO(repository.save(user));
     }
 
     private void confirmRegistration (User user)
@@ -156,9 +178,9 @@ public class UserService implements IUserService {
         mailSender.send(email);
     }
 
-    public void updateAvatar(String name, MultipartFile file)
+    public void updateAvatar(Long userId, MultipartFile file)
     {
-        User user = repository.findByUsername(name).orElseThrow(() -> new UsernameNotFoundException(name));
+        User user = repository.findById(userId).orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         try {
 
@@ -195,6 +217,14 @@ public class UserService implements IUserService {
     
     private boolean usernameExists(String username) {
         return repository.findByUsername(username).isPresent();
+    }
+
+    private void updateIfPresent(String value, Consumer<String> setter)
+    {
+        if(value != null && !value.isBlank())
+        {
+            setter.accept(value);
+        }
     }
 
     private String extractObjectLocation(String avatarUrl)

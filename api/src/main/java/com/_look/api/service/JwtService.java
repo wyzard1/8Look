@@ -21,9 +21,9 @@ public class JwtService {
     @Value("${spring.security.jwt.key}")
     private String key;
 
-    public String extractEmail(String jwt)
+    public Long extractUserId(String jwt)
     {
-        return extractClaim(jwt, Claims::getSubject);
+        return Long.valueOf(extractClaim(jwt, Claims::getSubject));
     }
 
     public String generateToken(UserDetails userDetails)
@@ -33,10 +33,11 @@ public class JwtService {
 
     public boolean isTokenValid(String token, UserDetails userDetails)
     {
-        final String email = extractEmail(token);
-        User user = (User) userDetails;
+        final Long userId = extractUserId(token);
 
-        return email.equals(user.getEmail()) && !isTokenExipred(token);
+        return userDetails instanceof User user
+                && userId.equals(user.getId())
+                && !isTokenExipred(token);
     }
 
     private boolean isTokenExipred(String token)
@@ -53,11 +54,13 @@ public class JwtService {
             UserDetails userDetails
     )
     {
-        String subject = userDetails instanceof User user ? user.getEmail() : userDetails.getUsername();
+        if (!(userDetails instanceof User user) || user.getId() == null) {
+            throw new IllegalArgumentException("JWT token subject requires a persisted user id");
+        }
 
         return Jwts.builder()
                 .claims(extraClaims)
-                .subject(subject)
+                .subject(user.getId().toString())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + 1000*24*60))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
