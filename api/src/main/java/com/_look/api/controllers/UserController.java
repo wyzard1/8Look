@@ -154,6 +154,7 @@ public class UserController {
         dto.setId(user.getId());
         dto.setEmail(user.getEmail());
         dto.setUsername(user.getUsername());
+        dto.setPhone_number(user.getPhone_number());
         dto.setAvatarUrl(user.getAvatar_url());
         dto.setLast_login(user.getLast_login());
         dto.setIs_verified(user.getIs_verified());

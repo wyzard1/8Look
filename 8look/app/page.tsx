@@ -13,20 +13,16 @@ import {
   Warehouse,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { FormEvent, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import SiteHeader, { HeaderSearch } from './components/SiteHeader';
 import styles from './home.module.css';
 import { formatPrice, formatRelativeTime } from '@/lib/format';
-
-type Listing = {
-  id: number;
-  categoryId?: number | null;
-  title: string;
-  price?: number | null;
-  place?: string | null;
-  updatedAt?: string | null;
-  images?: string[] | null;
-};
+import {
+  fallbackListingImage,
+  safeFirstListingImageUrl,
+  type PublicListing,
+} from '@/lib/listings';
 
 const categories = [
   { id: 1, label: 'Immovables', icon: Warehouse },
@@ -38,26 +34,14 @@ const categories = [
   { id: 7, label: 'Clothing', icon: Shirt },
 ] as const;
 
-const fallbackImage = '/listing-placeholder.png';
 type PriceSort = 'newest' | 'price-asc' | 'price-desc';
 
-function safeImageUrl(images?: string[] | null) {
-  const candidate = images?.[0];
-  if (!candidate) return fallbackImage;
-
-  try {
-    const url = new URL(candidate);
-    return url.protocol === 'http:' || url.protocol === 'https:'
-      ? url.toString()
-      : fallbackImage;
-  } catch {
-    return fallbackImage;
-  }
-}
-
 export default function Home() {
-  const [query, setQuery] = useState('');
-  const [listings, setListings] = useState<Listing[]>([]);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get('query')?.trim() ?? '';
+  const [query, setQuery] = useState(initialQuery);
+  const [listings, setListings] = useState<PublicListing[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [locationFilter, setLocationFilter] = useState('');
   const [minPrice, setMinPrice] = useState('');
@@ -65,6 +49,7 @@ export default function Home() {
   const [priceSort, setPriceSort] = useState<PriceSort>('newest');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [hasSearched, setHasSearched] = useState(Boolean(initialQuery));
   const categoryNavRef = useRef<HTMLElement>(null);
   const categoryIndicatorRef = useRef<HTMLSpanElement>(null);
 
@@ -91,9 +76,9 @@ export default function Home() {
   }, [selectedCategory]);
   useEffect(() => {
     const controller = new AbortController();
-    void loadListings('', controller.signal);
+    void loadListings(initialQuery, controller.signal);
     return () => controller.abort();
-  }, []);
+  }, [initialQuery]);
 
   async function loadListings(searchQuery: string, signal?: AbortSignal) {
     setLoading(true);
@@ -120,8 +105,6 @@ export default function Home() {
     }
   }
 
-  const [hasSearched, setHasSearched] = useState(false);
-
   function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const cleanQuery = query.trim();
@@ -131,6 +114,7 @@ export default function Home() {
       setError('Use 3 to 20 characters for search.');
       return;
     }
+    router.push(cleanQuery ? `/?query=${encodeURIComponent(cleanQuery)}` : '/');
     void loadListings(cleanQuery);
   }
 
@@ -307,13 +291,13 @@ export default function Home() {
                 <Link className={styles.listingCard} href={`/listing/${listing.id}`} key={listing.id}>
                   <div className={styles.listingImageWrap}>
                     <img
-                      src={safeImageUrl(listing.images)}
+                      src={safeFirstListingImageUrl(listing.images)}
                       alt=""
                       loading="lazy"
                       referrerPolicy="no-referrer"
                       onError={(event) => {
                         event.currentTarget.onerror = null;
-                        event.currentTarget.src = fallbackImage;
+                        event.currentTarget.src = fallbackListingImage;
                       }}
                     />
                   </div>

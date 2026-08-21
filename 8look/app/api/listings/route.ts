@@ -1,47 +1,13 @@
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
-import { getApiBaseUrl } from '../registration/route';
+import { getApiBaseUrl, getBearerToken } from '@/lib/api';
+import { toPublicListing } from '@/lib/listings';
 
 const searchPattern = /^[a-zA-Z0-9 -]{3,20}$/;
-
-type ApiListing = {
-  id?: unknown;
-  categoryId?: unknown;
-  title?: unknown;
-  price?: unknown;
-  place?: unknown;
-  updatedAt?: unknown;
-  images?: unknown;
-};
 
 type ApiUser = {
   id?: unknown;
 };
-
-export function getBearerToken(request: NextRequest, cookieToken?: string) {
-  const authHeader = request.headers.get('authorization');
-
-  if (authHeader?.startsWith('Bearer ')) {
-    return authHeader.substring(7);
-  }
-
-  return cookieToken;
-}
-
-function toPublicListing(value: unknown) {
-  const listing = value as ApiListing;
-  return {
-    id: typeof listing.id === 'number' ? listing.id : 0,
-    categoryId: typeof listing.categoryId === 'number' ? listing.categoryId : null,
-    title: typeof listing.title === 'string' ? listing.title : '',
-    price: typeof listing.price === 'number' ? listing.price : null,
-    place: typeof listing.place === 'string' ? listing.place : null,
-    updatedAt: typeof listing.updatedAt === 'string' ? listing.updatedAt : null,
-    images: Array.isArray(listing.images)
-      ? listing.images.filter((image): image is string => typeof image === 'string')
-      : [],
-  };
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -109,7 +75,7 @@ export async function POST(request: NextRequest) {
 
     const response = await fetch(`${apiBaseUrl}/listings/create`, {
       method: 'POST',
-      headers: { Accept: 'application/json' },
+      headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
       body: formData,
       signal: AbortSignal.timeout(30000),
     });

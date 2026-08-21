@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getApiBaseUrl } from "../registration/route";
 import { cookies } from "next/headers";
-import { getBearerToken } from "../listings/route";
-import { ApiUser } from "../me/route";
+import { ApiUser, getApiBaseUrl, getBearerToken } from "@/lib/api";
 
 export async function PATCH(request: NextRequest) {
   const cookieStore = await cookies();

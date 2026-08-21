@@ -8,6 +8,7 @@ export type User =
   id: number;
   email: string;
   username: string;
+  phone_number?: string | null;
   last_login: string | null;
   is_verified: boolean;
   avatarUrl: string | null;

@@ -4,7 +4,7 @@ import { LayoutList, LogOut, Moon, Newspaper, Search, Settings, Sun } from 'luci
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { type FormEventHandler, type ReactNode, useEffect, useState } from 'react';
+import { type FormEvent, type FormEventHandler, type ReactNode, useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import Dropdown, { DropdownItem } from './Dropdown';
 
@@ -136,8 +136,22 @@ export function HeaderSearch({
   children?: ReactNode;
   onSubmit?: FormEventHandler<HTMLFormElement>;
 }) {
+  const router = useRouter();
+  const [defaultQuery, setDefaultQuery] = useState('');
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    if (onSubmit) {
+      onSubmit(event);
+      return;
+    }
+
+    event.preventDefault();
+    const cleanQuery = defaultQuery.trim();
+    router.push(cleanQuery ? `/?query=${encodeURIComponent(cleanQuery)}` : '/');
+  }
+
   return (
-    <form className="search-form" onSubmit={onSubmit} role="search">
+    <form className="search-form" onSubmit={handleSubmit} role="search">
       <Search aria-hidden="true" size={20} />
       {children ?? (
         <input
@@ -145,6 +159,8 @@ export function HeaderSearch({
           autoComplete="off"
           maxLength={20}
           placeholder="What are you looking for?"
+          value={defaultQuery}
+          onChange={(event) => setDefaultQuery(event.target.value)}
         />
       )}
     </form>

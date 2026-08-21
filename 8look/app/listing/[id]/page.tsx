@@ -10,10 +10,12 @@ import SiteHeader, { defaultAvatarUrl, HeaderSearch } from '../../components/Sit
 import styles from './listing.module.css';
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
-import type { ApiListing } from '@/app/api/listing/[id]/route';
 import { formatPrice, formatRelativeTime } from '@/lib/format';
-
-const fallbackImage = '/listing-placeholder.png';
+import {
+  fallbackListingImage,
+  safeListingImageUrl,
+  type ListingDetails,
+} from '@/lib/listings';
 
 export function formatLastLogin(lastLogin?: string | null) {
   if (!lastLogin) return 'Last seen unknown';
@@ -41,25 +43,9 @@ export function formatLastLogin(lastLogin?: string | null) {
   return `Last seen ${yearsAgo} ${yearsAgo === 1 ? 'year' : 'years'} ago`;
 }
 
-export function safeImageUrl(image?: string | null) 
-{
-  if (!image) return fallbackImage;
-
-  try 
-  {
-    const url = new URL(image);
-    return url.protocol === 'http:' || url.protocol === 'https:'
-      ? url.toString()
-      : fallbackImage;
-  } catch 
-  {
-    return fallbackImage;
-  }
-}
-
 export default function ProductPage() 
 {
-  const [listing, setListing] = useState<ApiListing | null>(null);
+  const [listing, setListing] = useState<ListingDetails | null>(null);
   const params = useParams();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const [loading, setLoading] = useState(true);
@@ -67,10 +53,10 @@ export default function ProductPage()
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   const imageUrls = useMemo(
-    () => listing?.images?.map(safeImageUrl).filter((image) => image !== fallbackImage) ?? [],
+    () => listing?.images?.map(safeListingImageUrl).filter((image) => image !== fallbackListingImage) ?? [],
     [listing],
   );
-  const selectedImage = imageUrls[selectedImageIndex] ?? fallbackImage;
+  const selectedImage = imageUrls[selectedImageIndex] ?? fallbackListingImage;
 
   useEffect(() => {
     if (!id) return;
@@ -88,7 +74,7 @@ export default function ProductPage()
       
               if(!response.ok) throw new Error("Unable to fetch listing");
       
-      const data: ApiListing = await response.json();
+      const data: ListingDetails = await response.json();
       setListing(data);
       setSelectedImageIndex(0);
       }
@@ -126,7 +112,7 @@ export default function ProductPage()
               referrerPolicy="no-referrer"
               onError={(event) => {
                 event.currentTarget.onerror = null;
-                event.currentTarget.src = fallbackImage;
+                event.currentTarget.src = fallbackListingImage;
               }}
             />
           </div>
@@ -146,7 +132,7 @@ export default function ProductPage()
                     referrerPolicy="no-referrer"
                     onError={(event) => {
                       event.currentTarget.onerror = null;
-                      event.currentTarget.src = fallbackImage;
+                      event.currentTarget.src = fallbackListingImage;
                     }}
                   />
                 </button>

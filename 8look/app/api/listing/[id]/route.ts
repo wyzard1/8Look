@@ -1,26 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getApiBaseUrl } from "../../registration/route";
-
-export type ApiListing =
-{
-    id: number;
-    title: string;
-    description: string;
-    price: number;
-    place: string;
-    createdAt: string | null;
-    updatedAt: string | null;
-    categoryId: number;
-    images: string[];
-    sellerId: number;
-    viewCount: number;
-    seller?: {
-        id: number;
-        username: string;
-        avatarUrl: string | null;
-        lastLogin: string | null;
-    } | null;
-}
+import { getApiBaseUrl } from "@/lib/api";
+import type { ListingDetails } from "@/lib/listings";
 
 export async function POST()
 {        
@@ -58,7 +38,7 @@ export async function GET(  request: NextRequest,
       return NextResponse.json({ error: 'Listing service unavailable.' }, { status: 502 });
         }
 
-        const listing:ApiListing = await response.json();
+        const listing: ListingDetails = await response.json();
 
 
     return NextResponse.json(listing, 

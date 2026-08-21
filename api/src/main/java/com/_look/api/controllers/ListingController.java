@@ -65,6 +65,16 @@ public class ListingController {
             .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/user/{sellerId}")
+    public ResponseEntity<UserListingsResponse> getAllListingsByUserId(@PathVariable Integer sellerId){
+        return userRepository.findById(sellerId.longValue())
+            .map(user -> ResponseEntity.ok(new UserListingsResponse(
+                toSellerListingsResponse(user),
+                listingService.getAllListingByUserId(sellerId)
+            )))
+            .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     private ResponseEntity<ListingDetailsResponse> toListingDetailsResponse(Listing listing) {
         SellerResponse seller = null;
 
@@ -99,6 +109,16 @@ public class ListingController {
         );
     }
 
+    private SellerListingsResponse toSellerListingsResponse(User user) {
+        return new SellerListingsResponse(
+            user.getId(),
+            user.getUsername(),
+            user.getAvatar_url(),
+            user.getLast_login(),
+            user.getPhone_number()
+        );
+    }
+
     public record ListingDetailsResponse(
         Integer id,
         String title,
@@ -119,5 +139,18 @@ public class ListingController {
         String username,
         String avatarUrl,
         Instant lastLogin
+    ) {}
+
+    public record SellerListingsResponse(
+        Long id,
+        String username,
+        String avatarUrl,
+        Instant lastLogin,
+        String phoneNumber
+    ) {}
+
+    public record UserListingsResponse(
+        SellerListingsResponse seller,
+        List<Listing> listings
     ) {}
 }

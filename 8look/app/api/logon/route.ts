@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getApiBaseUrl } from '../registration/route';
+import { getApiBaseUrl } from '@/lib/api';
 
 export async function POST(request: NextRequest) {
   try {

@@ -1,7 +1,6 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { getBearerToken } from "../listings/route";
-import { getApiBaseUrl } from "../registration/route";
+import { getApiBaseUrl, getBearerToken } from "@/lib/api";
 
 export async function GET() {
   return NextResponse.json({ message: 'This endpoint is for deleting the user. Please use a DELETE request.' }, { status: 405 });

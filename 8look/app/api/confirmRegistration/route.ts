@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getApiBaseUrl } from "../registration/route";
+import { getApiBaseUrl } from "@/lib/api";
 
 const searchPattern = /^[a-zA-Z0-9 -]{36}$/;
 

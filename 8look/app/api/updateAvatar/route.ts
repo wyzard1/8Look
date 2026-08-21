@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getApiBaseUrl } from "../registration/route";
 import { cookies } from "next/headers";
-import { getBearerToken } from "../me/route";
+import { getApiBaseUrl, getBearerToken } from "@/lib/api";
 
 export async function GET() {
   return NextResponse.json({ message: 'This endpoint is for updating the avatar. Please use a POST request.' }, { status: 405 });

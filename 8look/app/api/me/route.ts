@@ -1,31 +1,6 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { getApiBaseUrl } from "../registration/route";
-
-
-export type ApiUser =
-{
-    id: number;
-    email: string;
-    username: string;
-    avatar_url?: string;
-    avatarUrl?: string;
-    last_login: Date | null;
-    is_verified?: boolean;
-    isVerified?: boolean;
-    verified?: boolean;
-    enabled?: boolean;
-}
-
-export function getBearerToken(request: NextRequest, cookieToken?: string) {
-    const authHeader = request.headers.get("authorization");
-
-    if (authHeader?.startsWith("Bearer ")) {
-        return authHeader.substring(7);
-    }
-
-    return cookieToken;
-}
+import { ApiUser, getApiBaseUrl, getBearerToken } from "@/lib/api";
 
 export async function POST() {
   return NextResponse.json({ error: 'Method not allowed.' }, { status: 405 });

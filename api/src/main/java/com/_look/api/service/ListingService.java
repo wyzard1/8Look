@@ -60,6 +60,8 @@ public class ListingService {
         return listingRepository.findAll();
     }
 
+    public List<Listing> getAllListingByUserId(Integer sellerId){return listingRepository.findAllBySellerId(sellerId);}
+
     public Listing createListing(Listing listing) {
         listing.setCreatedAt(Instant.now());
         listing.setUpdatedAt(Instant.now());

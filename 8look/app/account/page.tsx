@@ -9,6 +9,7 @@ import {
   User,
   UserCheck,
   UserRound,
+  Phone,
   X,
 } from 'lucide-react';
 import Image from 'next/image';
@@ -26,7 +27,7 @@ type UserUpdateDTO = {
   current_password?: string;
 };
 
-type AccountField = 'username' | 'email' | 'password' | 'confirmPassword' | 'current_password';
+type AccountField = 'username' | 'email' | 'phone_number' | 'password' | 'confirmPassword' | 'current_password';
 type FieldErrors = Partial<Record<AccountField, string>>;
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -52,6 +53,7 @@ export default function AccountPage() {
       : defaultAvatarUrl;   
     const usernameValue = updateData.username ?? currentUser?.username ?? '';
     const emailValue = updateData.email ?? currentUser?.email ?? '';
+    const phoneNumberValue = updateData.phone_number ?? currentUser?.phone_number ?? '';
 
     useEffect(() => {
       if (!isLoadingUser && !currentUser) {
@@ -78,11 +80,13 @@ export default function AccountPage() {
       const errors: FieldErrors = {};
       const username = usernameValue.trim();
       const email = emailValue.trim();
+      const phone_number = phoneNumberValue.trim();
       const password = updateData.password ?? '';
       const currentPassword = updateData.current_password ?? '';
       const hasChangedProfile =
         username !== (currentUser?.username ?? '') ||
         email !== (currentUser?.email ?? '') ||
+        phone_number !== (currentUser?.phone_number ?? '') ||
         password.length > 0;
 
       if (!username) {
@@ -126,6 +130,7 @@ export default function AccountPage() {
       return {
         username,
         email,
+        phone_number,
         password,
         current_password: currentPassword,
       };
@@ -173,6 +178,7 @@ export default function AccountPage() {
           ...previous,
           username: undefined,
           email: undefined,
+          phone_number: undefined,
           password: '',
           current_password: '',
         }));
@@ -342,6 +348,20 @@ export default function AccountPage() {
                       {fieldErrors.username}
                     </span>
                   )}
+                </label>
+
+                <label className={`${styles.field} ${styles.wideField}`}>
+                  <span>Phone number</span>
+                  <span className={styles.inputWithIcon}>
+                    <Phone size={18} aria-hidden="true" />
+                    <input
+                      name="phoneNumber"
+                      type="tel"
+                      placeholder="Your phone number"
+                      value={phoneNumberValue}
+                      onChange={(e) => updateField('phone_number', e.target.value)}
+                    />
+                  </span>
                 </label>
 
               </div>
