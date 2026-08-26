@@ -104,6 +104,11 @@ public class Listing {
         return image_urls;
     }
 
+    public void setImage_urls(List<String> urls)
+    {
+        image_urls = urls;
+    }
+
     public void addImageUrl(String imageUrl) {
         getImages().add(imageUrl);
     }

@@ -4,8 +4,11 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.time.Instant;
 
+import com._look.api.DTO.ListingUpdateDTO;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import com._look.api.entities.Listing;
@@ -29,6 +32,35 @@ public class ListingController {
     public ListingController(ListingService listingService, UserRepository userRepository) {
         this.listingService = listingService;
         this.userRepository = userRepository;
+    }
+
+    @PatchMapping("/edit/{listingId}")
+    public ResponseEntity<ListingDetailsResponse> editListing(@PathVariable long listingId, @RequestPart("listing") Listing listing,
+                                                              @RequestPart(value = "files", required = false) List<MultipartFile> files,
+                                                              @RequestPart ListingUpdateDTO dto, Authentication authentication)
+    {
+        User authenticatedUser = getAuthenticatedUser(authentication);
+        if (authenticatedUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            Listing updatedListing = listingService.editListing(
+                Math.toIntExact(listingId),
+                Math.toIntExact(authenticatedUser.getId()),
+                dto, files
+            );
+            return toListingDetailsResponse(updatedListing);
+        } catch (ArithmeticException ex) {
+            return ResponseEntity.badRequest().build();
+        } catch (SecurityException ex) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        } catch (IllegalArgumentException ex) {
+            if ("Listing not found".equals(ex.getMessage())) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -117,6 +149,15 @@ public class ListingController {
             user.getLast_login(),
             user.getPhone_number()
         );
+    }
+
+    private User getAuthenticatedUser(Authentication authentication)
+    {
+        if (authentication == null || !(authentication.getPrincipal() instanceof User user)) {
+            return null;
+        }
+
+        return user;
     }
 
     public record ListingDetailsResponse(

@@ -7,6 +7,8 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 
+import com._look.api.DTO.ListingUpdateDTO;
+import com._look.api.controllers.ListingController;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +66,69 @@ public class ListingService {
 
     public Listing createListing(Listing listing) {
         listing.setCreatedAt(Instant.now());
+        listing.setUpdatedAt(Instant.now());
+        return listingRepository.save(listing);
+    }
+
+    public Listing editListing(Integer listingId, Integer sellerId, ListingUpdateDTO dto, List<MultipartFile> files)
+    {
+        if (dto == null) {
+            throw new IllegalArgumentException("Listing update data is required");
+        }
+
+        Listing listing = listingRepository.findById(listingId)
+            .orElseThrow(() -> new IllegalArgumentException("Listing not found"));
+
+        if (sellerId != null && !sellerId.equals(listing.getSellerId())) {
+            throw new SecurityException("Only the listing owner can edit this listing");
+        }
+
+        if (dto.getTitle() != null) {
+            if (dto.getTitle().isBlank()) {
+                throw new IllegalArgumentException("Title cannot be blank");
+            }
+            listing.setTitle(dto.getTitle().trim());
+        }
+
+        if (dto.getPrice() != null) {
+            if (dto.getPrice() <= 0) {
+                throw new IllegalArgumentException("Price must be greater than 0");
+            }
+            listing.setPrice(dto.getPrice());
+        }
+
+        if (dto.getDescription() != null) {
+            listing.setDescription(dto.getDescription().trim());
+        }
+
+        if (dto.getPlace() != null) {
+            if (dto.getPlace().isBlank()) {
+                throw new IllegalArgumentException("Place cannot be blank");
+            }
+            listing.setPlace(dto.getPlace().trim());
+        }
+
+        listing.setImage_urls(dto.getImage_urls());
+
+        for (MultipartFile file : files) {
+            if (file.isEmpty()) {
+                continue;
+            }
+            try {
+                String filename = sanitizeFilename(file.getOriginalFilename());
+                String location = listing.getId() + "/" + UUID.randomUUID() + "-" + filename;
+                PutObjectArgs args = PutObjectArgs.builder().bucket(bucket).object(location)
+                        .stream(file.getInputStream(), file.getSize(), (long) -1).contentType(file.getContentType())
+                        .build();
+                minioClient.putObject(args);
+                listing.addImageUrl(buildImageAccessUrl(location));
+            }
+            catch (Exception e)
+            {
+                throw new IllegalStateException("Could not upload listing image", e);
+            }
+        }
+
         listing.setUpdatedAt(Instant.now());
         return listingRepository.save(listing);
     }
