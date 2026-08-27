@@ -4,13 +4,16 @@ import {
   Clock3,
   MapPin,
   MessageCircle,
+  Pencil,
   UserRound,
 } from 'lucide-react';
+import Link from 'next/link';
 import SiteHeader, { defaultAvatarUrl, HeaderSearch } from '../../components/SiteHeader';
 import styles from './listing.module.css';
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { formatPrice, formatRelativeTime } from '@/lib/format';
+import { useAuth } from '@/lib/auth';
 import {
   fallbackListingImage,
   safeListingImageUrl,
@@ -51,12 +54,14 @@ export default function ProductPage()
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const { user: currentUser } = useAuth();
 
   const imageUrls = useMemo(
     () => listing?.images?.map(safeListingImageUrl).filter((image) => image !== fallbackListingImage) ?? [],
     [listing],
   );
   const selectedImage = imageUrls[selectedImageIndex] ?? fallbackListingImage;
+  const canEditListing = Boolean(currentUser && listing?.sellerId === currentUser.id);
 
   useEffect(() => {
     if (!id) return;
@@ -144,6 +149,7 @@ export default function ProductPage()
 
         <article className={styles.productDetails}>
           <section className={styles.sellerCard} aria-label="Seller information">
+          <Link href={`/listing/user/${listing.sellerId}`} className={styles.sellerAvatarLink}>
             <img
               src={listing.seller?.avatarUrl || defaultAvatarUrl}
               alt=""
@@ -154,6 +160,7 @@ export default function ProductPage()
                 event.currentTarget.src = defaultAvatarUrl;
               }}
             />
+          </Link>
             <div className={styles.sellerInfo}>
               <p className={styles.eyebrow}>Seller</p>
               <h2>
@@ -194,6 +201,12 @@ export default function ProductPage()
           </div>
 
           <div className={styles.productActions}>
+            {canEditListing && (
+              <Link className={styles.editButton} href={`/listing/edit/${listing.id}`}>
+                <Pencil size={18} aria-hidden="true" />
+                Edit listing
+              </Link>
+            )}
             <button className={styles.contactButton} type="button">
               <MessageCircle size={18} aria-hidden="true" />
               Contact seller

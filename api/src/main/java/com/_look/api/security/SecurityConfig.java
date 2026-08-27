@@ -40,6 +40,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/listings/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/listings/create").authenticated()
                         .requestMatchers(HttpMethod.PATCH, "/listings/edit").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/listings/delete/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

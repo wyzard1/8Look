@@ -210,7 +210,8 @@
   margin-top: auto;
 }
 
-.contactButton{
+.contactButton,
+.editButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -219,6 +220,7 @@
   border-radius: 6px;
   font-weight: 750;
   cursor: pointer;
+  text-decoration: none;
 }
 
 .contactButton {
@@ -230,6 +232,18 @@
 
 .contactButton:hover {
   background: var(--accent-hover);
+}
+
+.editButton {
+  flex: 1;
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+  color: var(--foreground);
+}
+
+.editButton:hover {
+  border-color: color-mix(in srgb, var(--secondary) 55%, var(--border));
+  background: var(--surface);
 }
 
 @media (max-width: 960px) {

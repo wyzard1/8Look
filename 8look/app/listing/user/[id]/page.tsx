@@ -1,6 +1,6 @@
 'use client';
 
-import { Clock3, MapPin, Phone } from 'lucide-react';
+import { Clock3, MapPin, Pencil, Phone } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
@@ -11,6 +11,7 @@ import {
   type PublicListing,
 } from '@/lib/listings';
 import styles from './user-listings.module.css';
+import { useAuth } from '@/lib/auth';
 
 type Seller = {
   id: number;
@@ -29,11 +30,14 @@ export default function UserListingsPage() {
   const params = useParams<{ id: string }>();
   const sellerId = params.id;
   const isValidSellerId = /^\d+$/.test(sellerId);
+  const { user: currentUser } = useAuth();
   const [data, setData] = useState<UserListingsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [failedAvatarUrl, setFailedAvatarUrl] = useState<string | null>(null);
+  const isCurrentUserPage = Boolean(currentUser && Number(sellerId) === currentUser.id);
 
+  
   const avatarUrl = useMemo(() => {
     const sellerAvatar = data?.seller.avatarUrl;
     return sellerAvatar && sellerAvatar !== failedAvatarUrl ? sellerAvatar : defaultAvatarUrl;
@@ -131,23 +135,33 @@ export default function UserListingsPage() {
             {data.listings.length > 0 ? (
               <div className={styles.listingGrid}>
                 {data.listings.map((listing) => (
-                  <Link className={styles.listingCard} href={`/listing/${listing.id}`} key={listing.id}>
-                    <div className={styles.listingImageWrap}>
-                      <img src={safeFirstListingImageUrl(listing.images)} alt="" />
-                    </div>
-                    <div className={styles.listingContent}>
-                      <h3>{listing.title || 'Untitled listing'}</h3>
-                      <p className={styles.listingDetail}>
-                        <MapPin size={16} aria-hidden="true" />
-                        {listing.place || 'Location not provided'}
-                      </p>
-                      <p className={styles.listingDetail}>
-                        <Clock3 size={16} aria-hidden="true" />
-                        {formatRelativeTime(listing.updatedAt)}
-                      </p>
-                      <p className={styles.price}>{formatPrice(listing.price)}</p>
-                    </div>
-                  </Link>
+                  <article className={styles.listingCard} key={listing.id}>
+                    <Link className={styles.listingLink} href={`/listing/${listing.id}`}>
+                      <div className={styles.listingImageWrap}>
+                        <img src={safeFirstListingImageUrl(listing.images)} alt="" />
+                      </div>
+                      <div className={styles.listingContent}>
+                        <h3>{listing.title || 'Untitled listing'}</h3>
+                        <p className={styles.listingDetail}>
+                          <MapPin size={16} aria-hidden="true" />
+                          {listing.place || 'Location not provided'}
+                        </p>
+                        <p className={styles.listingDetail}>
+                          <Clock3 size={16} aria-hidden="true" />
+                          {formatRelativeTime(listing.updatedAt)}
+                        </p>
+                        <p className={styles.price}>{formatPrice(listing.price)}</p>
+                      </div>
+                    </Link>
+                    {isCurrentUserPage && (
+                      <div className={styles.cardActions}>
+                        <Link className={styles.editButton} href={`/listing/edit/${listing.id}`}>
+                          <Pencil size={16} aria-hidden="true" />
+                          Edit listing
+                        </Link>
+                      </div>
+                    )}
+                  </article>
                 ))}
               </div>
             ) : (

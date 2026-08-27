@@ -1,6 +1,7 @@
 package com._look.api.controllers;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.regex.Pattern;
 import java.time.Instant;
 
@@ -34,10 +35,11 @@ public class ListingController {
         this.userRepository = userRepository;
     }
 
-    @PatchMapping("/edit/{listingId}")
-    public ResponseEntity<ListingDetailsResponse> editListing(@PathVariable long listingId, @RequestPart("listing") Listing listing,
+    @PatchMapping(value = "/edit/{listingId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ListingDetailsResponse> editListing(@PathVariable Integer listingId,
+                                                              @RequestPart("listing") ListingUpdateDTO dto,
                                                               @RequestPart(value = "files", required = false) List<MultipartFile> files,
-                                                              @RequestPart ListingUpdateDTO dto, Authentication authentication)
+                                                              Authentication authentication)
     {
         User authenticatedUser = getAuthenticatedUser(authentication);
         if (authenticatedUser == null) {
@@ -46,13 +48,11 @@ public class ListingController {
 
         try {
             Listing updatedListing = listingService.editListing(
-                Math.toIntExact(listingId),
+                listingId,
                 Math.toIntExact(authenticatedUser.getId()),
                 dto, files
             );
             return toListingDetailsResponse(updatedListing);
-        } catch (ArithmeticException ex) {
-            return ResponseEntity.badRequest().build();
         } catch (SecurityException ex) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         } catch (IllegalArgumentException ex) {
@@ -62,6 +62,18 @@ public class ListingController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Void> deleteListing(@PathVariable Integer id)
+    {
+        try {
+            listingService.deleteListing(id);
+            return ResponseEntity.ok().build();
+        } catch (NoSuchElementException ex) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Listing createListing(@RequestPart("listing") Listing listing,
