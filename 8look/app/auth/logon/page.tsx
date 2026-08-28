@@ -65,6 +65,7 @@ export default function LogOnPage() {
           <input name="email" type="email" autoComplete="email" required />
           <h2>Password</h2>
           <input name="password" type="password" autoComplete="current-password" required />
+          <Link className={styles.helperLink} href="/auth/forgot-password">Forgot password?</Link>
           <button type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Logging in...' : 'Log in'}
           </button>

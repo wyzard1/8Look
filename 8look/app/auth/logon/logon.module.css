@@ -140,6 +140,18 @@
   line-height: 1.4;
 }
 
+.helperLink {
+  justify-self: start;
+  color: var(--secondary);
+  font-size: 0.9rem;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.helperLink:hover {
+  text-decoration: underline;
+}
+
 @media (max-width: 700px) {
   .logOnPage :global(.header-top) {
     width: min(100% - 28px, 1240px);

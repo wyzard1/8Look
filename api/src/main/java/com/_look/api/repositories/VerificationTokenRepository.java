@@ -12,9 +12,13 @@ public interface VerificationTokenRepository
 
     VerificationToken findByToken(String token);
 
-    VerificationToken findByUser(User user);
+    VerificationToken findByTokenAndPurpose(String token, String purpose);
+
+    VerificationToken findByUserAndPurpose(User user, String purpose);
 
     List<VerificationToken> findByExpiryDateLessThan(Date now);
 
     void deleteByExpiryDateLessThan(Date now);
+
+    void deleteByUserAndPurpose(User user, String purpose);
 }

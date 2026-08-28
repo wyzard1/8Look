@@ -15,8 +15,13 @@ public class VerificationToken {
     private Long id;
 
     public VerificationToken(String token, User user) {
+        this(token, user, "REGISTRATION");
+    }
+
+    public VerificationToken(String token, User user, String purpose) {
         this.token = token;
         this.user = user;
+        this.purpose = purpose;
         this.expiryDate = calculateExpiryDate(EXPIRATION);
     }
 
@@ -26,7 +31,9 @@ public class VerificationToken {
 
     private String token;
 
-    @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER)
+    private String purpose;
+
+    @ManyToOne(targetEntity = User.class, fetch = FetchType.EAGER)
     @JoinColumn(nullable = false, name = "user_id")
 
     private User user;
@@ -47,6 +54,14 @@ public class VerificationToken {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public String getPurpose() {
+        return purpose;
+    }
+
+    public void setPurpose(String purpose) {
+        this.purpose = purpose;
     }
 
     public User getUser() {

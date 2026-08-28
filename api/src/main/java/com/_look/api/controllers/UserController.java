@@ -1,5 +1,8 @@
 package com._look.api.controllers;
 
+import com._look.api.DTO.PasswordResetConfirmDTO;
+import com._look.api.DTO.PasswordResetRequestDTO;
+import com._look.api.DTO.PasswordResetResultDTO;
 import com._look.api.DTO.UserDTO;
 import com._look.api.DTO.UserMeDTO;
 import com._look.api.DTO.UserUpdateDTO;
@@ -52,6 +55,22 @@ public class UserController {
     {
         service.registerNewUser(dto);
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @PostMapping("/passwordReset/request")
+    public ResponseEntity<Void> requestPasswordReset(@Valid @RequestBody PasswordResetRequestDTO dto)
+    {
+        service.requestPasswordReset(dto.getEmail());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/passwordReset/confirm")
+    public ResponseEntity<PasswordResetResultDTO> confirmPasswordReset(@Valid @RequestBody PasswordResetConfirmDTO dto)
+    {
+        PasswordResetResultDTO result = service.resetPassword(dto.getToken(), dto.getPassword());
+        return "OK".equals(result.status())
+                ? ResponseEntity.ok(result)
+                : ResponseEntity.status(HttpStatus.CONFLICT).body(result);
     }
 
     @PatchMapping({"/updateUser"})

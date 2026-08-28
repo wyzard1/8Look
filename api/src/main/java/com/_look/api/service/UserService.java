@@ -3,6 +3,7 @@ package com._look.api.service;
 import com._look.api.DTO.UserDTO;
 import com._look.api.DTO.UserMeDTO;
 import com._look.api.DTO.UserUpdateDTO;
+import com._look.api.DTO.PasswordResetResultDTO;
 import com._look.api.entities.Role;
 import com._look.api.entities.User;
 import com._look.api.entities.VerificationToken;
@@ -38,6 +39,8 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 @Transactional
 @Service
 public class UserService implements IUserService {
+    private static final String REGISTRATION_TOKEN_PURPOSE = "REGISTRATION";
+    private static final String PASSWORD_RESET_TOKEN_PURPOSE = "PASSWORD_RESET";
 
     private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
@@ -51,6 +54,8 @@ public class UserService implements IUserService {
     private String publicMinioEndpoint;
     @Value("${spring.minio.user_bucket}")
     private String bucket;
+    @Value("${spring.mail.username}")
+    private String mailUsername;
 
     @Autowired
     private MinioClient minioClient;
@@ -108,8 +113,66 @@ public class UserService implements IUserService {
 
     @Override
     public void createVerificationToken(User user, String token) {
-        VerificationToken v = new VerificationToken(token, user);
+        VerificationToken v = new VerificationToken(token, user, REGISTRATION_TOKEN_PURPOSE);
         tokenRepository.save(v);
+    }
+
+    public void requestPasswordReset(String email) {
+        if (email == null || email.isBlank()) {
+            return;
+        }
+
+        Optional<User> user = repository.findByEmail(email.trim());
+        if (user.isEmpty()) {
+            return;
+        }
+
+        tokenRepository.deleteByUserAndPurpose(user.get(), PASSWORD_RESET_TOKEN_PURPOSE);
+
+        String token = UUID.randomUUID().toString();
+        VerificationToken resetToken = new VerificationToken(token, user.get(), PASSWORD_RESET_TOKEN_PURPOSE);
+        tokenRepository.saveAndFlush(resetToken);
+
+        String resetURL = buildFrontendUrl("/auth/reset-password?token="+token);
+
+        SimpleMailMessage resetEmail = new SimpleMailMessage();
+        resetEmail.setSubject("8look password reset");
+        resetEmail.setFrom(mailUsername);
+        resetEmail.setTo(user.get().getEmail());
+        resetEmail.setText("""
+                         We received a request to reset your 8look password.
+                         If this was you, open this link to set a new password:
+                         """ + "\r\n" + resetURL + "\r\n\r\nThis link expires in 24 hours.");
+        mailSender.send(resetEmail);
+    }
+
+    public PasswordResetResultDTO resetPassword(String token, String password) {
+        if (token == null || token.isBlank() || password == null || password.length() < 8) {
+            return new PasswordResetResultDTO("INVALID_INPUT", "Reset token is missing or password is too short.");
+        }
+
+        String cleanToken = token.trim();
+        VerificationToken resetToken = tokenRepository.findByTokenAndPurpose(cleanToken, PASSWORD_RESET_TOKEN_PURPOSE);
+        if (resetToken == null) {
+            VerificationToken anyToken = tokenRepository.findByToken(cleanToken);
+            if (anyToken != null) {
+                return new PasswordResetResultDTO("WRONG_TOKEN_PURPOSE", "This link is not a password reset link.");
+            }
+            return new PasswordResetResultDTO("TOKEN_NOT_FOUND", "This reset link was not found. Request a new password reset link.");
+        }
+
+        Date now = Date.from(Instant.now());
+        if (resetToken.getExpiryDate() == null || !resetToken.getExpiryDate().after(now)) {
+            tokenRepository.delete(resetToken);
+            return new PasswordResetResultDTO("TOKEN_EXPIRED", "This reset link has expired. Request a new password reset link.");
+        }
+
+        User user = resetToken.getUser();
+        user.setPassword(passwordEncoder.encode(password));
+        user.setUpdated_at(Instant.now());
+        repository.save(user);
+        tokenRepository.delete(resetToken);
+        return new PasswordResetResultDTO("OK", "Password reset.");
     }
 
     @Scheduled(fixedRate = 60, timeUnit = MINUTES)
@@ -119,7 +182,7 @@ public class UserService implements IUserService {
         List<VerificationToken> l = tokenRepository.findByExpiryDateLessThan(now);
         for(VerificationToken v : l)
         {
-            if (v.getUser().isEnabled() == false) {
+            if (REGISTRATION_TOKEN_PURPOSE.equals(v.getPurpose()) && v.getUser().isEnabled() == false) {
                 repository.delete(v.getUser());
             }
         }
@@ -163,8 +226,7 @@ public class UserService implements IUserService {
         String token = UUID.randomUUID().toString();
         createVerificationToken(user, token);
 
-        String verifyURL = "http://"+System.getenv("APP_HOST")+":"+System.getenv("APP_PORT")
-        +"/"+"auth/confirmRegistration?token="+token;
+        String verifyURL = buildFrontendUrl("/auth/confirmRegistration?token="+token);
         String recipientAdress = user.getEmail();
         String subject = "8look Registration confirmation";
         String message = """
@@ -173,6 +235,7 @@ public class UserService implements IUserService {
 
         SimpleMailMessage email = new SimpleMailMessage();
         email.setSubject(subject);
+        email.setFrom(mailUsername);
         email.setTo(recipientAdress);
         email.setText(message + "\r\n" + verifyURL);
         mailSender.send(email);
@@ -269,6 +332,18 @@ public class UserService implements IUserService {
     private String buildImageAccessUrl(String location)
     {
         return publicMinioEndpoint.replaceAll("/+$", "") + "/" + bucket + "/" + location;
+    }
+
+    private String buildFrontendUrl(String path)
+    {
+        String host = Optional.ofNullable(System.getenv("APP_HOST"))
+                .filter(value -> !value.isBlank())
+                .orElse("localhost");
+        String port = Optional.ofNullable(System.getenv("APP_PORT"))
+                .filter(value -> !value.isBlank())
+                .orElse("3000");
+
+        return "http://" + host + ":" + port + path;
     }
 
     private String sanitizeFilename(String originalFilename)

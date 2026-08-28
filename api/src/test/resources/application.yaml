@@ -21,3 +21,10 @@ spring:
     port: 2525
     username:
     password:
+  minio:
+    endpoint: http://localhost:9000
+    public-endpoint: http://localhost:9000
+    access_key: test
+    secret_key: test
+    listing_bucket: listings
+    user_bucket: users
