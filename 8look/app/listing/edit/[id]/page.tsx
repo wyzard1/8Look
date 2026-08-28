@@ -34,6 +34,10 @@ const categories = [
   { id: 7, label: 'Clothing' },
 ];
 
+const allowedImageTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+const maxImageCount = 8;
+const maxImageSize = 5 * 1024 * 1024;
+
 type PreviewImage = {
   id: string;
   file: File;
@@ -124,8 +128,22 @@ export default function EditListingPage() {
   }, [newImages]);
 
   function addImages(event: ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(event.target.files ?? []).filter((file) => file.type.startsWith('image/'));
+    setError('');
+    const files = Array.from(event.target.files ?? []);
     if (files.length === 0) return;
+    const rejectedFile = files.find((file) => !allowedImageTypes.has(file.type) || file.size > maxImageSize);
+
+    if (rejectedFile) {
+      setError('Photos must be JPG, PNG, WebP, or GIF files under 5 MB.');
+      event.target.value = '';
+      return;
+    }
+
+    if (existingImages.length + newImages.length + files.length > maxImageCount) {
+      setError(`Keep up to ${maxImageCount} photos on a listing.`);
+      event.target.value = '';
+      return;
+    }
 
     setNewImages((currentImages) => [
       ...currentImages,
@@ -360,7 +378,7 @@ export default function EditListingPage() {
                   <label className={styles.uploadDropzone}>
                     <UploadCloud size={28} aria-hidden="true" />
                     <span>Add more photos</span>
-                    <small>Choose one or more images.</small>
+                    <small>Up to 8 photos total, 5 MB each.</small>
                     <input type="file" accept="image/*" multiple onChange={addImages} />
                   </label>
 

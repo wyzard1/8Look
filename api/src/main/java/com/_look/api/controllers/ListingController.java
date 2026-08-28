@@ -64,11 +64,18 @@ public class ListingController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> deleteListing(@PathVariable Integer id)
+    public ResponseEntity<Void> deleteListing(@PathVariable Integer id, Authentication authentication)
     {
+        User authenticatedUser = getAuthenticatedUser(authentication);
+        if (authenticatedUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         try {
-            listingService.deleteListing(id);
+            listingService.deleteListing(id, Math.toIntExact(authenticatedUser.getId()));
             return ResponseEntity.ok().build();
+        } catch (SecurityException ex) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         } catch (NoSuchElementException ex) {
             return ResponseEntity.notFound().build();
         }
@@ -149,7 +156,8 @@ public class ListingController {
             user.getId(),
             user.getUsername(),
             user.getAvatar_url(),
-            user.getLast_login()
+            user.getLast_login(),
+            user.getPhone_number()
         );
     }
 
@@ -191,7 +199,8 @@ public class ListingController {
         Long id,
         String username,
         String avatarUrl,
-        Instant lastLogin
+        Instant lastLogin,
+        String phoneNumber
     ) {}
 
     public record SellerListingsResponse(

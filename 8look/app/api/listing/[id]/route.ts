@@ -11,6 +11,10 @@ type ApiUserListingsResponse = {
   listings?: unknown;
 };
 
+const allowedImageTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+const maxImageCount = 8;
+const maxImageSize = 5 * 1024 * 1024;
+
 function isValidListingId(id: string) {
   return /^\d+$/.test(id);
 }
@@ -152,13 +156,24 @@ export async function PATCH(
       listing.image_urls = imageUrls;
     }
 
+    const files = incomingFormData.getAll("files").filter((file): file is File => file instanceof File && file.size > 0);
+    const totalImageCount = imageUrls.length + files.length;
+
+    if (totalImageCount > maxImageCount) {
+      return noStoreJson({ error: `Keep up to ${maxImageCount} photos on a listing.` }, { status: 400 });
+    }
+
+    for (const file of files) {
+      if (!allowedImageTypes.has(file.type) || file.size > maxImageSize) {
+        return noStoreJson({ error: "Photos must be JPG, PNG, WebP, or GIF files under 5 MB." }, { status: 400 });
+      }
+    }
+
     const formData = new FormData();
     formData.append("listing", new Blob([JSON.stringify(listing)], { type: "application/json" }));
 
-    for (const file of incomingFormData.getAll("files")) {
-      if (file instanceof File && file.size > 0) {
-        formData.append("files", file, file.name);
-      }
+    for (const file of files) {
+      formData.append("files", file, file.name);
     }
 
     const response = await fetch(`${getApiBaseUrl()}/listings/edit/${id}`, {

@@ -2,9 +2,11 @@
 
 import {
   Clock3,
+  Loader2,
   MapPin,
   MessageCircle,
   Pencil,
+  Phone,
   UserRound,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -54,6 +56,7 @@ export default function ProductPage()
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [showContact, setShowContact] = useState(false);
   const { user: currentUser } = useAuth();
 
   const imageUrls = useMemo(
@@ -62,6 +65,7 @@ export default function ProductPage()
   );
   const selectedImage = imageUrls[selectedImageIndex] ?? fallbackListingImage;
   const canEditListing = Boolean(currentUser && listing?.sellerId === currentUser.id);
+  const sellerPhone = listing?.seller?.phoneNumber?.trim();
 
   useEffect(() => {
     if (!id) return;
@@ -82,6 +86,7 @@ export default function ProductPage()
       const data: ListingDetails = await response.json();
       setListing(data);
       setSelectedImageIndex(0);
+      setShowContact(false);
       }
       catch{
         setListing(null);
@@ -101,13 +106,24 @@ export default function ProductPage()
       <SiteHeader search={<HeaderSearch />} />
 
       {loading ? (
-      <div>
-        <h1>Loading listing...</h1>
-      </div>
+      <section className={styles.productPage} aria-busy="true">
+        <div className={`${styles.productImageWrap} ${styles.skeletonBlock}`} />
+        <article className={styles.productDetails}>
+          <div className={styles.loadingState}>
+            <Loader2 className={styles.spin} size={22} aria-hidden="true" />
+            <span>Loading listing</span>
+          </div>
+          <div className={styles.skeletonLine} />
+          <div className={styles.skeletonLineSmall} />
+          <div className={styles.skeletonLine} />
+        </article>
+      </section>
       ) : error || !listing ?
-      (<div>
-        <h1>Product not available</h1>
-      </div>) :
+      (<section className={styles.emptyState}>
+        <h1>Listing not available</h1>
+        <p>{error ?? 'This listing may have been removed or is temporarily unavailable.'}</p>
+        <Link href="/">Back to listings</Link>
+      </section>) :
       (<section className={styles.productPage}>
         <div className={styles.productGallery}>
           <div className={styles.productImageWrap}>
@@ -196,9 +212,20 @@ export default function ProductPage()
           <div className={styles.productDescription}>
             <h2>Description</h2>
             <p>
-              {listing.description}
+              {listing.description?.trim() || 'No description provided.'}
             </p>
           </div>
+
+          {showContact && (
+            <div className={styles.contactPanel} role="status">
+              <p className={styles.eyebrow}>Contact</p>
+              {listing.seller?.username && <strong>{listing.seller.username}</strong>}
+              <span>
+                <Phone size={16} aria-hidden="true" />
+                {sellerPhone ? <a href={`tel:${sellerPhone}`}>{sellerPhone}</a> : 'Contact details are not shared for this seller yet.'}
+              </span>
+            </div>
+          )}
 
           <div className={styles.productActions}>
             {canEditListing && (
@@ -207,9 +234,9 @@ export default function ProductPage()
                 Edit listing
               </Link>
             )}
-            <button className={styles.contactButton} type="button">
+            <button className={styles.contactButton} type="button" onClick={() => setShowContact((current) => !current)}>
               <MessageCircle size={18} aria-hidden="true" />
-              Contact seller
+              {showContact ? 'Hide contact' : 'Contact seller'}
             </button>
           </div>
         </article>

@@ -41,7 +41,7 @@ public class SecurityConfig {
                         .requestMatchers("/registrationConfirm").permitAll()
                         .requestMatchers(HttpMethod.GET, "/listings/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/listings/create").authenticated()
-                        .requestMatchers(HttpMethod.PATCH, "/listings/edit").authenticated()
+                        .requestMatchers(HttpMethod.PATCH, "/listings/edit/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/listings/delete/**").authenticated()
                         .anyRequest().authenticated()
                 )

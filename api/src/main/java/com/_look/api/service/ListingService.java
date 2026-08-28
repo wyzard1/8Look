@@ -89,6 +89,18 @@ public class ListingService {
         listingRepository.delete(listing);
     }
 
+    public void deleteListing(Integer listingId, Integer sellerId){
+        Listing listing = listingRepository.findById(listingId)
+                .orElseThrow(() -> new NoSuchElementException("Listing not found"));
+
+        if (sellerId != null && !sellerId.equals(listing.getSellerId())) {
+            throw new SecurityException("Only the listing owner can delete this listing");
+        }
+
+        deleteListingImages(listingId);
+        listingRepository.delete(listing);
+    }
+
     public Listing editListing(Integer listingId, Integer sellerId, ListingUpdateDTO dto, List<MultipartFile> files) {
         if (dto == null) {
             throw new IllegalArgumentException("Listing update data is required");

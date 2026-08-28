@@ -4,6 +4,9 @@ import { getApiBaseUrl, getBearerToken } from '@/lib/api';
 import { toPublicListing } from '@/lib/listings';
 
 const searchPattern = /^[a-zA-Z0-9 -]{3,20}$/;
+const allowedImageTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+const maxImageCount = 8;
+const maxImageSize = 5 * 1024 * 1024;
 
 type ApiUser = {
   id?: unknown;
@@ -67,10 +70,20 @@ export async function POST(request: NextRequest) {
       ], { type: 'application/json' }),
     );
 
-    for (const file of incomingFormData.getAll('files')) {
-      if (file instanceof File && file.size > 0) {
-        formData.append('files', file, file.name);
+    const files = incomingFormData.getAll('files').filter((file): file is File => file instanceof File && file.size > 0);
+
+    if (files.length > maxImageCount) {
+      return NextResponse.json({ error: `Upload up to ${maxImageCount} photos.` }, { status: 400 });
+    }
+
+    for (const file of files) {
+      if (!allowedImageTypes.has(file.type) || file.size > maxImageSize) {
+        return NextResponse.json({ error: 'Photos must be JPG, PNG, WebP, or GIF files under 5 MB.' }, { status: 400 });
       }
+    }
+
+    for (const file of files) {
+      formData.append('files', file, file.name);
     }
 
     const response = await fetch(`${apiBaseUrl}/listings/create`, {

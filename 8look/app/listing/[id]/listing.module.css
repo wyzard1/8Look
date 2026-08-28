@@ -183,7 +183,13 @@
 
 .viewCount
 {
-  align-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  margin: -8px 0 0;
+  color: var(--muted);
+  font-size: 14px;
 }
 
 .productDescription {
@@ -202,6 +208,43 @@
   color: var(--muted);
   font-size: 16px;
   line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+.contactPanel {
+  display: grid;
+  gap: 7px;
+  border: 1px solid color-mix(in srgb, var(--secondary) 36%, var(--border));
+  border-radius: 8px;
+  padding: 14px;
+  background: color-mix(in srgb, var(--secondary) 8%, var(--surface));
+}
+
+.contactPanel strong {
+  color: var(--foreground);
+}
+
+.contactPanel span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.contactPanel a {
+  color: var(--foreground);
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.contactPanel a:hover {
+  color: var(--secondary);
+}
+
+.contactPanel svg {
+  flex: 0 0 auto;
+  color: var(--secondary);
 }
 
 .productActions {
@@ -244,6 +287,103 @@
 .editButton:hover {
   border-color: color-mix(in srgb, var(--secondary) 55%, var(--border));
   background: var(--surface);
+}
+
+.emptyState {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 12px;
+  width: min(100% - 48px, 720px);
+  min-height: 360px;
+  margin: 42px auto 64px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 28px;
+  background: var(--surface);
+  text-align: center;
+}
+
+.emptyState h1 {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.15;
+}
+
+.emptyState p {
+  max-width: 460px;
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.emptyState a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  border-radius: 6px;
+  padding: 0 16px;
+  background: var(--accent);
+  color: #ffffff;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.loadingState {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-weight: 750;
+}
+
+.spin {
+  animation: spin 850ms linear infinite;
+}
+
+.skeletonBlock,
+.skeletonLine,
+.skeletonLineSmall {
+  overflow: hidden;
+  background: linear-gradient(
+    90deg,
+    var(--surface-soft) 0%,
+    color-mix(in srgb, var(--surface-soft) 62%, var(--surface)) 50%,
+    var(--surface-soft) 100%
+  );
+  background-size: 220% 100%;
+  animation: shimmer 1200ms ease-in-out infinite;
+}
+
+.skeletonLine,
+.skeletonLineSmall {
+  height: 20px;
+  border-radius: 6px;
+}
+
+.skeletonLine {
+  width: 80%;
+}
+
+.skeletonLineSmall {
+  width: 48%;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 120% 0;
+  }
+
+  to {
+    background-position: -120% 0;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 960px) {
@@ -297,6 +437,12 @@
 
   .productActions {
     flex-direction: column;
+  }
+
+  .emptyState {
+    width: min(100% - 28px, 720px);
+    margin-top: 24px;
+    padding: 22px;
   }
 
 }

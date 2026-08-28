@@ -114,6 +114,21 @@ class ListingServiceTest {
     }
 
     @Test
+    void deleteListingShouldRejectNonOwner() {
+        Listing listing = new Listing(7, 11, null, "Title", null, null, null, null, null, null, List.of());
+        when(listingRepository.findById(7)).thenReturn(Optional.of(listing));
+
+        SecurityException exception = assertThrows(
+            SecurityException.class,
+            () -> listingService.deleteListing(7, 12)
+        );
+
+        assertEquals("Only the listing owner can delete this listing", exception.getMessage());
+        verify(minioClient, never()).listObjects(any(ListObjectsArgs.class));
+        verify(listingRepository, never()).delete(any(Listing.class));
+    }
+
+    @Test
     void editListingShouldDeleteImagesMissingFromDtoImageUrls() {
         ReflectionTestUtils.setField(listingService, "bucket", "listing-bucket");
         ReflectionTestUtils.setField(listingService, "minioEndpoint", "http://minio:9000");

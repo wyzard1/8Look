@@ -3,7 +3,7 @@
 import { ImagePlus, Loader2, MapPin, Trash2, UploadCloud } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
-import SiteHeader, { HeaderSearch } from '@/app/components/SiteHeader';
+import SiteHeader from '@/app/components/SiteHeader';
 import { getCurrentUser } from '@/lib/auth';
 import styles from './create.module.css';
 
@@ -16,6 +16,10 @@ const categories = [
   { id: 6, label: 'Sports' },
   { id: 7, label: 'Clothing' },
 ];
+
+const allowedImageTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+const maxImageCount = 8;
+const maxImageSize = 5 * 1024 * 1024;
 
 type PreviewImage = {
   id: string;
@@ -69,8 +73,22 @@ export default function CreateListingPage() {
   }, [images]);
 
   function addImages(event: ChangeEvent<HTMLInputElement>) {
-    const selectedFiles = Array.from(event.target.files ?? []).filter((file) => file.type.startsWith('image/'));
+    setError('');
+    const selectedFiles = Array.from(event.target.files ?? []);
     if (selectedFiles.length === 0) return;
+    const rejectedFile = selectedFiles.find((file) => !allowedImageTypes.has(file.type) || file.size > maxImageSize);
+
+    if (rejectedFile) {
+      setError('Photos must be JPG, PNG, WebP, or GIF files under 5 MB.');
+      event.target.value = '';
+      return;
+    }
+
+    if (images.length + selectedFiles.length > maxImageCount) {
+      setError(`Upload up to ${maxImageCount} photos.`);
+      event.target.value = '';
+      return;
+    }
 
     setImages((currentImages) => [
       ...currentImages,
@@ -218,7 +236,7 @@ export default function CreateListingPage() {
             <label className={styles.uploadDropzone}>
               <UploadCloud size={28} aria-hidden="true" />
               <span>Add listing photos</span>
-              <small>Optional. Choose one or more images.</small>
+              <small>Optional. Up to 8 photos, 5 MB each.</small>
               <input type="file" accept="image/*" multiple onChange={addImages} />
             </label>
 

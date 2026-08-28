@@ -40,6 +40,7 @@ export type ListingDetails = {
     username: string;
     avatarUrl: string | null;
     lastLogin: string | null;
+    phoneNumber?: string | null;
   } | null;
 };
 
