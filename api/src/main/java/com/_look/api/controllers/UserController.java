@@ -20,17 +20,20 @@ import jakarta.validation.Valid;
 import org.apache.tomcat.util.http.SameSiteCookies;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
-
 
 @RestController
 public class UserController {
@@ -48,6 +51,28 @@ public class UserController {
     {
         this.service = s;
         this.userRepository = userRepository;
+    }
+
+    @MessageMapping("/user.setUserOnline")
+    @SendTo("/user/topic")
+    public User addUser(@Payload User user)
+    {
+        service.setUserOnline(user);
+        return user;
+    }
+
+    @MessageMapping("/user.disconnectUser")
+    @SendTo("/user/topic")
+    public User disconnect(@Payload User user)
+    {
+        service.disconnect(user);
+        return user;
+    }
+
+    @GetMapping("/onlineUsers")
+    public ResponseEntity<List<User>> findConnectedUsers()
+    {
+        return ResponseEntity.ok(service.findConnectedUsers());
     }
 
     @PostMapping({"/registration"})

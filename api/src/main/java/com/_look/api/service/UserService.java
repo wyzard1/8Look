@@ -5,6 +5,7 @@ import com._look.api.DTO.UserMeDTO;
 import com._look.api.DTO.UserUpdateDTO;
 import com._look.api.DTO.PasswordResetResultDTO;
 import com._look.api.entities.Role;
+import com._look.api.entities.Status;
 import com._look.api.entities.User;
 import com._look.api.entities.VerificationToken;
 import com._look.api.repositories.UserRepository;
@@ -76,6 +77,25 @@ public class UserService implements IUserService {
 
     public String encodePassword(String password) {
         return passwordEncoder.encode(password);
+    }
+
+    public void disconnect(User user)
+    {
+        var storedUser = repository.findById(user.getId()).orElse(null);
+        if(storedUser != null) {
+            user.setStatus(Status.OFFLINE);
+            repository.save(user);
+        }
+    }
+
+    public void setUserOnline(User user)
+    {
+        user.setStatus(Status.ONLINE);
+        repository.save(user);
+    }
+
+    public List<User> findConnectedUsers(){
+        return repository.findAllByStatus(Status.ONLINE);
     }
 
     @Override

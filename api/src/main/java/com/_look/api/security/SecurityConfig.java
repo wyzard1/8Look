@@ -36,6 +36,7 @@ public class SecurityConfig {
                         .requestMatchers("/authenticate").permitAll()
                         .requestMatchers("/passwordReset/request").permitAll()
                         .requestMatchers("/passwordReset/confirm").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/auth/user").hasAuthority("USER")
                         .requestMatchers("/auth/admin").hasAuthority("ADMIN")
                         .requestMatchers("/registrationConfirm").permitAll()

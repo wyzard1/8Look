@@ -6,7 +6,6 @@ import {
   MapPin,
   MessageCircle,
   Pencil,
-  Phone,
   UserRound,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -56,7 +55,6 @@ export default function ProductPage()
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [showContact, setShowContact] = useState(false);
   const { user: currentUser } = useAuth();
 
   const imageUrls = useMemo(
@@ -65,7 +63,6 @@ export default function ProductPage()
   );
   const selectedImage = imageUrls[selectedImageIndex] ?? fallbackListingImage;
   const canEditListing = Boolean(currentUser && listing?.sellerId === currentUser.id);
-  const sellerPhone = listing?.seller?.phoneNumber?.trim();
 
   useEffect(() => {
     if (!id) return;
@@ -86,7 +83,6 @@ export default function ProductPage()
       const data: ListingDetails = await response.json();
       setListing(data);
       setSelectedImageIndex(0);
-      setShowContact(false);
       }
       catch{
         setListing(null);
@@ -216,17 +212,6 @@ export default function ProductPage()
             </p>
           </div>
 
-          {showContact && (
-            <div className={styles.contactPanel} role="status">
-              <p className={styles.eyebrow}>Contact</p>
-              {listing.seller?.username && <strong>{listing.seller.username}</strong>}
-              <span>
-                <Phone size={16} aria-hidden="true" />
-                {sellerPhone ? <a href={`tel:${sellerPhone}`}>{sellerPhone}</a> : 'Contact details are not shared for this seller yet.'}
-              </span>
-            </div>
-          )}
-
           <div className={styles.productActions}>
             {canEditListing && (
               <Link className={styles.editButton} href={`/listing/edit/${listing.id}`}>
@@ -234,10 +219,21 @@ export default function ProductPage()
                 Edit listing
               </Link>
             )}
-            <button className={styles.contactButton} type="button" onClick={() => setShowContact((current) => !current)}>
-              <MessageCircle size={18} aria-hidden="true" />
-              {showContact ? 'Hide contact' : 'Contact seller'}
-            </button>
+            {currentUser && !canEditListing && (
+              <Link
+                className={styles.contactButton}
+                href={`/chat?recipientId=${listing.sellerId}&recipientName=${encodeURIComponent(listing.seller?.username || 'Seller')}`}
+              >
+                <MessageCircle size={18} aria-hidden="true" />
+                Contact seller
+              </Link>
+            )}
+            {!currentUser && (
+              <Link className={styles.contactButton} href="/auth/logon">
+                <MessageCircle size={18} aria-hidden="true" />
+                Contact seller
+              </Link>
+            )}
           </div>
         </article>
       </section>)}

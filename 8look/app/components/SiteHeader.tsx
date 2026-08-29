@@ -1,6 +1,6 @@
 'use client';
 
-import { LayoutList, LogOut, Moon, Newspaper, Search, Settings, Sun } from 'lucide-react';
+import { LayoutList, LogOut, MessageCircle, Moon, Newspaper, Search, Settings, Sun } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -107,6 +107,10 @@ export default function SiteHeader({
                   <DropdownItem>
                     <LayoutList size={16} aria-hidden="true" />
                     <Link href={`/listing/user/${currentUser.id}`}>My Listings</Link>
+                  </DropdownItem>
+                  <DropdownItem>
+                    <MessageCircle size={16} aria-hidden="true" />
+                    <Link href="/chat">Messages</Link>
                   </DropdownItem>
                   <DropdownItem>
                     <LogOut size={16} aria-hidden="true" />

@@ -33,3 +33,17 @@ export function formatRelativeTime(value?: string | Date | null) {
   const yearsAgo = Math.floor(daysAgo / 365);
   return `Updated ${yearsAgo} ${yearsAgo === 1 ? 'year' : 'years'} ago`;
 }
+
+export function formatMessageTime(timestamp?: string | Date | null) {
+  if (!timestamp) return '';
+
+  const date = new Date(timestamp);
+  if (!Number.isFinite(date.getTime())) return '';
+
+  return new Intl.DateTimeFormat(undefined, {
+    hour: '2-digit',
+    minute: '2-digit',
+    month: 'short',
+    day: 'numeric',
+  }).format(date);
+}
